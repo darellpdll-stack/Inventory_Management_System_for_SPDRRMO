@@ -30,9 +30,7 @@
                     <button type="submit" class="btn btn-primary w-100">Login</button>
                 </form>
 
-                <p class="text-center mt-3 mb-0">
-                    No account? <a href="{{ route('register') }}">Register</a>
-                </p>
+                
             </div>
         </div>
     </div>

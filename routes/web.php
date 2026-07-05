@@ -1,8 +1,9 @@
 <?php
+use App\Http\Controllers\SupplyItemController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\DeploymentController;
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
@@ -21,4 +22,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/supplies', [SupplyItemController::class, 'index'])->name('supplies.index');
+    Route::get('/supplies/create', [SupplyItemController::class, 'create'])->name('supplies.create');
+    Route::post('/supplies', [SupplyItemController::class, 'store'])->name('supplies.store');
+    Route::get('/supplies/{supply}/edit', [SupplyItemController::class, 'edit'])->name('supplies.edit');
+    Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
+    Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
+    Route::get('/supplies/category/{category}', [SupplyItemController::class, 'category'])->name('supplies.category');
+    Route::post('/supplies/{supply}/dismiss', [SupplyItemController::class, 'dismissExpiry'])->name('supplies.dismiss');
+    Route::get('/deployments', [DeploymentController::class, 'index'])->name('deployments.index');
+    Route::get('/deployments/create', [DeploymentController::class, 'create'])->name('deployments.create');
+    Route::post('/deployments', [DeploymentController::class, 'store'])->name('deployments.store');
+    Route::get('/deployments/{deployment}', [DeploymentController::class, 'show'])->name('deployments.show');
 });
