@@ -6,52 +6,94 @@
     <title>@yield('title', 'Inventory Management System for SPDRRMO')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { background-color: #f8f9fa; }
-        .sidebar {
-            width: 240px;
-            min-height: 100vh;
-            background-color: #0d6efd;
-            position: fixed;
-            top: 0;
-            left: 0;
-            padding-top: 1rem;
+        :root {
+            --ink: #14262b;
+            --muted: #64777c;
+            --sidebar: #0f2b31;
+            --sidebar-deep: #0b2126;
+            --accent: #e8930c;
+            --accent-soft: rgba(232,147,12,0.14);
+            --surface: #f4f6f4;
+            --card: #ffffff;
+            --line: #e2e6e2;
         }
-        .sidebar .brand {
-            color: #fff;
-            font-weight: bold;
-            font-size: 1.1rem;
-            padding: 0.5rem 1.25rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            display: block;
+        * { font-family: 'Archivo', system-ui, sans-serif; }
+        body { background-color: var(--surface); color: var(--ink); }
+
+        .sidebar {
+            width: 244px; min-height: 100vh;
+            background-color: var(--sidebar);
+            position: fixed; top: 0; left: 0;
+            display: flex; flex-direction: column;
+        }
+        .brand-block {
+            background-color: var(--sidebar-deep);
+            padding: 1.15rem 1.25rem;
+            display: flex; align-items: center; gap: 0.7rem;
             text-decoration: none;
         }
+        .brand-mark {
+            width: 34px; height: 34px; border-radius: 8px;
+            background-color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--sidebar-deep); font-weight: 800; font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+        .brand-text { line-height: 1.1; }
+        .brand-text .name { color: #fff; font-weight: 700; font-size: 1rem; letter-spacing: .02em; }
+        .brand-text .sub { color: rgba(255,255,255,.55); font-size: .68rem; letter-spacing: .09em; text-transform: uppercase; }
+
+        .sidebar .nav { padding: 0.75rem 0; }
         .sidebar .nav-link {
-            color: rgba(255,255,255,0.85);
-            padding: 0.65rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
+            color: rgba(255,255,255,0.78);
+            padding: 0.7rem 1.25rem;
+            display: flex; align-items: center; gap: 0.7rem;
             border-left: 3px solid transparent;
+            font-size: 0.94rem; font-weight: 500;
+            transition: background-color .15s ease, color .15s ease;
         }
-        .sidebar .nav-link:hover {
-            background-color: rgba(255,255,255,0.12);
-            color: #fff;
-        }
+        .sidebar .nav-link i { font-size: 1.05rem; opacity: .85; }
+        .sidebar .nav-link:hover { background-color: rgba(255,255,255,0.06); color: #fff; }
         .sidebar .nav-link.active {
-            background-color: rgba(255,255,255,0.18);
-            color: #fff;
-            border-left-color: #fff;
-            font-weight: 600;
+            background-color: rgba(232,147,12,0.10);
+            color: #fff; border-left-color: var(--accent); font-weight: 600;
         }
-        .content-wrap { margin-left: 240px; }
+        .sidebar .nav-link.active i { color: var(--accent); opacity: 1; }
+        .sidebar-foot { margin-top: auto; padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,.08); }
+        .sidebar-foot .small { color: rgba(255,255,255,.4); font-size: .68rem; letter-spacing: .04em; }
+
+        .content-wrap { margin-left: 244px; }
         .topbar {
-            background-color: #fff;
-            border-bottom: 1px solid #dee2e6;
-            padding: 0.5rem 1.5rem;
+            background-color: var(--card);
+            border-bottom: 1px solid var(--line);
+            padding: 0.7rem 1.75rem;
+            display: flex; align-items: center; justify-content: space-between;
         }
+        .topbar .eyebrow { font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .topbar .page-title { font-size: 1.12rem; font-weight: 700; color: var(--ink); line-height: 1.15; }
+
+        .role-badge {
+            font-size: .66rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; padding: .18rem .5rem; border-radius: 999px; vertical-align: middle;
+        }
+        .role-admin { background-color: var(--accent-soft); color: #b9700a; border: 1px solid rgba(232,147,12,.3); }
+        .role-staff { background-color: #e8edea; color: #4a5b60; border: 1px solid #d3dcd7; }
+        .user-name { font-weight: 600; font-size: .92rem; color: var(--ink); }
+
+        .card { border: 1px solid var(--line); box-shadow: none; border-radius: 10px; }
+        .card .table thead.table-light th { background-color: #f1f4f1; color: var(--muted); font-weight: 600; font-size: .82rem; letter-spacing: .02em; }
+
+        .btn-primary { background-color: var(--sidebar); border-color: var(--sidebar); }
+        .btn-primary:hover, .btn-primary:focus { background-color: #0b2126; border-color: #0b2126; }
+
         .notif-item { transition: background-color 0.15s ease; border-radius: 6px; }
         .notif-item:hover { background-color: #f1f5f9; }
+
         @media (max-width: 768px) {
             .sidebar { position: static; width: 100%; min-height: auto; }
             .content-wrap { margin-left: 0; }
@@ -60,131 +102,50 @@
 </head>
 <body>
     @auth
-    {{-- Sidebar --}}
-    <div class="sidebar">
-        <a href="{{ route('dashboard') }}" class="brand">SPDRRMO Inventory</a>
-        <ul class="nav flex-column mt-2">
-            <li class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('supplies.index') }}" class="nav-link {{ request()->routeIs('supplies.*') ? 'active' : '' }}">
-                    <i class="bi bi-box-seam"></i> Supplies
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('deployments.index') }}" class="nav-link {{ request()->routeIs('deployments.*') ? 'active' : '' }}">
-                    <i class="bi bi-truck"></i> Deployments
-                </a>
-            </li>
-            @if(Auth::user()->role === 'admin')
-            <li class="nav-item">
-                <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i> Manage Users
-                </a>
-            </li>
-            @endif
-        </ul>
-    </div>
+    @include('partials.sidebar')
 
-    {{-- Content area --}}
     <div class="content-wrap">
-        {{-- Top bar --}}
-        <div class="topbar d-flex justify-content-end align-items-center">
-            {{-- Notification bell (low stock + expiry) --}}
-            @php $totalAlerts = $expiringItems->count() + $lowStockItems->count(); @endphp
-            <div class="dropdown me-3">
-                <button class="btn btn-sm btn-light position-relative" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-bell-fill"></i>
-                    @if($totalAlerts > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ $totalAlerts }}
-                        </span>
-                    @endif
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 340px; max-height: 440px; overflow-y: auto;">
+        @include('partials.topbar')
 
-                    {{-- Low stock section --}}
-                    <li><h6 class="dropdown-header text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Low Stock</h6></li>
-                    @forelse($lowStockItems as $item)
-                        <li>
-                            <div class="notif-item d-flex align-items-start px-2 py-2">
-                                <a class="flex-grow-1 text-decoration-none text-dark" href="{{ route('supplies.edit', $item) }}">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="fw-semibold">{{ $item->item_name }}</span>
-                                        <span class="badge bg-danger">{{ $item->current_stock }} left</span>
-                                    </div>
-                                    <div class="small text-muted">
-                                        {{ $item->category->name }} · Min: {{ $item->minimum_stock }} {{ $item->unit }}
-                                    </div>
-                                    <div class="small text-primary mt-1">
-                                        <i class="bi bi-box-arrow-in-right"></i> Click to view
-                                    </div>
-                                </a>
-                            </div>
-                        </li>
-                    @empty
-                        <li><span class="dropdown-item-text text-muted small">All items sufficiently stocked ✅</span></li>
-                    @endforelse
-
-                    <li><hr class="dropdown-divider"></li>
-
-                    {{-- Expiry section --}}
-                    <li><h6 class="dropdown-header text-warning"><i class="bi bi-clock-history"></i> Expiring / Expired</h6></li>
-                    @forelse($expiringItems as $item)
-                        <li>
-                            <div class="notif-item d-flex align-items-start px-2 py-2">
-                                <a class="flex-grow-1 text-decoration-none text-dark" href="{{ route('supplies.edit', $item) }}">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="fw-semibold">{{ $item->item_name }}</span>
-                                        @if($item->expiration_date->isPast())
-                                            <span class="badge bg-dark">Expired</span>
-                                        @else
-                                            <span class="badge bg-warning text-dark">Soon</span>
-                                        @endif
-                                    </div>
-                                    <div class="small text-muted">
-                                        {{ $item->category->name }} · Exp: {{ $item->expiration_date->format('M d, Y') }}
-                                    </div>
-                                    <div class="small text-primary mt-1">
-                                        <i class="bi bi-box-arrow-in-right"></i> Click to view
-                                    </div>
-                                </a>
-                                <form action="{{ route('supplies.dismiss', $item) }}" method="POST" class="ms-2">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-link text-muted p-0" title="Dismiss">✕</button>
-                                </form>
-                            </div>
-                        </li>
-                    @empty
-                        <li><span class="dropdown-item-text text-muted small">No items expiring soon 🎉</span></li>
-                    @endforelse
-                </ul>
-            </div>
-
-            <span class="text-dark me-3">{{ Auth::user()->name }}</span>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="btn btn-sm btn-outline-secondary" type="submit">Logout</button>
-            </form>
-        </div>
-
-        {{-- Main content --}}
         <main class="container-fluid py-4 px-4">
             @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
+    <div id="flash-success" data-message="{{ session('success') }}" hidden></div>
+    @push('scripts')
+    <script>
+        (function () {
+            var el = document.getElementById('flash-success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: el.dataset.message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        })();
+    </script>
+    @endpush
+@endif
+
+@if(session('error'))
+    <div id="flash-error" data-message="{{ session('error') }}" hidden></div>
+    @push('scripts')
+    <script>
+        (function () {
+            var el = document.getElementById('flash-error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops',
+                text: el.dataset.message
+            });
+        })();
+    </script>
+    @endpush
+@endif
             @yield('content')
         </main>
     </div>
     @endauth
 
-    {{-- Guest pages (login) have no sidebar --}}
     @guest
     <main class="container py-4">
         @yield('content')
