@@ -17,23 +17,20 @@
             <a href="{{ route('supplies.index') }}" class="nav-link {{ request()->routeIs('supplies.*') ? 'active' : '' }}">
                 <i class="bi bi-box-seam"></i> Supplies
             </a>
-        </li>
-            <li class="nav-item">
-        <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
-            <i class="bi bi-people"></i> Personnel
-        </a>
-    </li>
+        
         <li class="nav-item">
             <a href="{{ route('deployments.index') }}" class="nav-link {{ request()->routeIs('deployments.*') ? 'active' : '' }}">
                 <i class="bi bi-truck"></i> Deployments
             </a>
         </li>
-        @if(Auth::user()->role === 'admin')
-        <li class="nav-item">
-            <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i> Manage Users
-            </a>
         </li>
+            <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
+    <i class="bi bi-people"></i> Personnel
+</a>
+        @if(Auth::user()->role === 'admin')
+        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+    <i class="bi bi-person-lock"></i> Manage Users
+        </a>
         @endif
     </ul>
 

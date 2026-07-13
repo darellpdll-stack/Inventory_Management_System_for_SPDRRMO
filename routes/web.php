@@ -35,11 +35,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/deployments/create', [DeploymentController::class, 'create'])->name('deployments.create');
     Route::post('/deployments', [DeploymentController::class, 'store'])->name('deployments.store');
     Route::get('/deployments/{deployment}', [DeploymentController::class, 'show'])->name('deployments.show');
+    // Personnel — all logged-in users can view and add
     Route::get('/personnel', [PersonnelController::class, 'index'])->name('personnel.index');
-    Route::get('/personnel/create', [PersonnelController::class, 'create'])->name('personnel.create');
-    Route::post('/personnel', [PersonnelController::class, 'store'])->name('personnel.store');
-    Route::get('/personnel/{person}', [PersonnelController::class, 'show'])->name('personnel.show');
-    Route::get('/personnel/{person}/edit', [PersonnelController::class, 'edit'])->name('personnel.edit');
-    Route::put('/personnel/{person}', [PersonnelController::class, 'update'])->name('personnel.update');
-    Route::delete('/personnel/{person}', [PersonnelController::class, 'destroy'])->name('personnel.destroy');
+        Route::get('/personnel/create', [PersonnelController::class, 'create'])->name('personnel.create');
+        Route::post('/personnel', [PersonnelController::class, 'store'])->name('personnel.store');
+        Route::get('/personnel/{person}', [PersonnelController::class, 'show'])->name('personnel.show');
+    // Personnel — admin only: edit, update, delete
+    Route::middleware('admin')->group(function () {
+        Route::get('/personnel/{person}/edit', [PersonnelController::class, 'edit'])->name('personnel.edit');
+        Route::put('/personnel/{person}', [PersonnelController::class, 'update'])->name('personnel.update');
+        Route::delete('/personnel/{person}', [PersonnelController::class, 'destroy'])->name('personnel.destroy');
+});
 });

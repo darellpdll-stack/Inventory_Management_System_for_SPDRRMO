@@ -28,14 +28,16 @@
                             <div class="col-md-6">Address: {{ $person->address ?? '—' }}</div>
                         </div>
                     </div>
-                    <div>
-                        <a href="{{ route('personnel.edit', $person) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('personnel.destroy', $person) }}" method="POST" class="d-inline"
-                              onsubmit="return confirm('Delete this personnel?');">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
-                    </div>
+                    @if(Auth::user()->role === 'admin')
+                        <div>
+                            <a href="{{ route('personnel.edit', $person) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form action="{{ route('personnel.destroy', $person) }}" method="POST" class="d-inline"
+                                onsubmit="return confirm('Delete this personnel?');">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </div>
+                        @endif
                 </div>
             </div>
         </div>
