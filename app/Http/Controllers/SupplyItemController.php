@@ -61,6 +61,7 @@ class SupplyItemController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            
             'category_id' => 'required|exists:supply_categories,id',
             'product_code' => 'required|string|max:100',
             'stock_no' => 'nullable|string|max:100',
@@ -68,10 +69,12 @@ class SupplyItemController extends Controller
             'unit' => 'required|string|max:50',
             'unit_value' => 'required|numeric|min:0',
             'balance_per_card' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
+            'minimum_stock' => 'nullable|integer|min:0',
             'expiration_date' => 'nullable|date',
             'remarks' => 'nullable|string|max:255',
         ]);
+
+        $validated['minimum_stock'] = $validated['minimum_stock'] ?? 0;
 
         SupplyItem::create($validated);
 

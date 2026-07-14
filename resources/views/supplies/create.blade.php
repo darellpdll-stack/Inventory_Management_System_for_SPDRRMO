@@ -61,9 +61,12 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Minimum Stock <span class="text-muted">(alert level)</span></label>
+                            <label class="form-label">
+                                Minimum Stock
+                                <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip"title="Alert level — leave blank if unnecessary"></i>
+                            </label>
                             <input type="number" name="minimum_stock" value="{{ old('minimum_stock', 0) }}"
-                                   class="form-control @error('minimum_stock') is-invalid @enderror" min="0" required>
+                                   class="form-control @error('minimum_stock') is-invalid @enderror" min="0">
                             @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6 mb-3">
