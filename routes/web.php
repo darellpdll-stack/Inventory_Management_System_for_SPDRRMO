@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeploymentController;
+use App\Http\Controllers\WithdrawalController;
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
@@ -45,5 +46,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/personnel/{person}/edit', [PersonnelController::class, 'edit'])->name('personnel.edit');
         Route::put('/personnel/{person}', [PersonnelController::class, 'update'])->name('personnel.update');
         Route::delete('/personnel/{person}', [PersonnelController::class, 'destroy'])->name('personnel.destroy');
+        Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
+    Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
+    Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+    Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'show'])->name('withdrawals.show');
 });
 });

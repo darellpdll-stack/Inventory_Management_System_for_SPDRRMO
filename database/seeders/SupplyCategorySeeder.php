@@ -14,9 +14,10 @@ class SupplyCategorySeeder extends Seeder
     public function run(): void
 {
     $categories = [
-        ['name' => 'Medical Supplies', 'description' => 'Medicines, first aid, and medical equipment'],
-        ['name' => 'Office Supplies', 'description' => 'Paper, pens, and office materials'],
-        ['name' => 'Training Supplies', 'description' => 'Materials used for trainings and drills'],
+        ['name' => 'Ink & Toners', 'description' => 'Printer inks and toner cartridges'],
+        ['name' => 'Computer Accessories', 'description' => 'Peripherals and computer parts'],
+        ['name' => 'Medical', 'description' => 'Medicines, first aid, and medical items'],
+        ['name' => 'Office', 'description' => 'Paper, pens, and office materials'],
     ];
 
     foreach ($categories as $category) {

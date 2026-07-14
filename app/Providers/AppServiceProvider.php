@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 
-    public function boot(): void
+public function boot(): void
 {
     View::composer('layouts.app', function ($view) {
         if (Auth::check()) {
@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
 
             $lowStockItems = SupplyItem::lowStock()
                 ->with('category')
-                ->orderBy('current_stock')
+                ->orderBy('balance_per_card')
                 ->get();
 
             $navCategories = \App\Models\SupplyCategory::orderBy('name')->get();

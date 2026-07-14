@@ -1,118 +1,87 @@
 @extends('layouts.app')
-@section('title', 'New Deployment')
+@section('title', 'Add Supply Item')
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-md-9">
-        <h4 class="fw-bold mb-3">Record a Deployment</h4>
-
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
+    <div class="col-md-8">
+        <h4 class="fw-bold mb-3">Add Supply Item</h4>
         <div class="card shadow-sm">
             <div class="card-body p-4">
-                <form method="POST" action="{{ route('deployments.store') }}">
+                <form method="POST" action="{{ route('supplies.store') }}">
                     @csrf
-
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
+                            <option value="">Select category</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description (Item Name)</label>
+                        <input type="text" name="description" value="{{ old('description') }}"
+                               class="form-control @error('description') is-invalid @enderror" required>
+                        @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Destination</label>
-                            <input type="text" name="destination" value="{{ old('destination') }}"
-                                   class="form-control" placeholder="e.g. Brgy. Rizal, Sorsogon" required>
+                            <label class="form-label">Product Code</label>
+                            <input type="text" name="product_code" value="{{ old('product_code') }}"
+                                   class="form-control @error('product_code') is-invalid @enderror" placeholder="e.g. 2FGT6" required>
+                            @error('product_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Purpose / Event <span class="text-muted">(optional)</span></label>
-                            <input type="text" name="purpose" value="{{ old('purpose') }}"
-                                   class="form-control" placeholder="e.g. Typhoon response">
+                            <label class="form-label">Stock No. <span class="text-muted">(optional)</span></label>
+                            <input type="text" name="stock_no" value="{{ old('stock_no') }}"
+                                   class="form-control @error('stock_no') is-invalid @enderror" placeholder="e.g. 91">
+                            @error('stock_no') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Unit of Measure</label>
+                            <input type="text" name="unit" value="{{ old('unit', 'pc') }}"
+                                   class="form-control @error('unit') is-invalid @enderror" required>
+                            @error('unit') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Unit Value (₱)</label>
+                            <input type="number" step="0.01" name="unit_value" value="{{ old('unit_value', 0) }}"
+                                   class="form-control @error('unit_value') is-invalid @enderror" min="0" required>
+                            @error('unit_value') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Balance Per Card (Qty)</label>
+                            <input type="number" name="balance_per_card" value="{{ old('balance_per_card', 0) }}"
+                                   class="form-control @error('balance_per_card') is-invalid @enderror" min="0" required>
+                            @error('balance_per_card') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Authorized By</label>
-                            <input type="text" name="authorized_by" value="{{ old('authorized_by') }}"
-                                   class="form-control" placeholder="e.g. SPDRRMO Chief" required>
+                            <label class="form-label">Minimum Stock <span class="text-muted">(alert level)</span></label>
+                            <input type="number" name="minimum_stock" value="{{ old('minimum_stock', 0) }}"
+                                   class="form-control @error('minimum_stock') is-invalid @enderror" min="0" required>
+                            @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Date</label>
-                            <input type="date" name="deployed_at" value="{{ old('deployed_at', date('Y-m-d')) }}"
-                                   class="form-control" required>
+                            <label class="form-label">Expiration Date <span class="text-muted">(leave blank if none)</span></label>
+                            <input type="date" name="expiration_date" value="{{ old('expiration_date') }}"
+                                   class="form-control @error('expiration_date') is-invalid @enderror">
+                            @error('expiration_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-
-                    <hr>
-                    <label class="form-label fw-semibold">Items to Deploy</label>
-
-                    <div id="itemRows">
-                        <div class="row g-2 mb-2 item-row">
-                            <div class="col-md-7">
-                                <select name="items[0][supply_item_id]" class="form-select" required>
-                                    <option value="">Select item</option>
-                                    @foreach($items as $item)
-                                        <option value="{{ $item->id }}">
-                                            {{ $item->item_name }} ({{ $item->category->name }}) — {{ $item->current_stock }} {{ $item->unit }} left
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="number" name="items[0][quantity]" class="form-control" min="1" placeholder="Qty" required>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="button" class="btn btn-outline-danger w-100 remove-row">Remove</button>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
+                        <input type="text" name="remarks" value="{{ old('remarks') }}" class="form-control">
                     </div>
-
-                    <button type="button" id="addRow" class="btn btn-outline-secondary btn-sm mb-3">+ Add another item</button>
-
-                    <div>
-                        <button class="btn btn-primary">Record Deployment</button>
-                        <a href="{{ route('deployments.index') }}" class="btn btn-light">Cancel</a>
-                    </div>
+                    <button class="btn btn-primary">Add Item</button>
+                    <a href="{{ route('supplies.index') }}" class="btn btn-light">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-    let rowIndex = 1;
-    const itemOptions = `@foreach($items as $item)<option value="{{ $item->id }}">{{ $item->item_name }} ({{ $item->category->name }}) — {{ $item->current_stock }} {{ $item->unit }} left</option>@endforeach`;
-
-    document.getElementById('addRow').addEventListener('click', function () {
-        const row = document.createElement('div');
-        row.className = 'row g-2 mb-2 item-row';
-        row.innerHTML = `
-            <div class="col-md-7">
-                <select name="items[${rowIndex}][supply_item_id]" class="form-select" required>
-                    <option value="">Select item</option>${itemOptions}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <input type="number" name="items[${rowIndex}][quantity]" class="form-control" min="1" placeholder="Qty" required>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-danger w-100 remove-row">Remove</button>
-            </div>`;
-        document.getElementById('itemRows').appendChild(row);
-        rowIndex++;
-    });
-
-    document.getElementById('itemRows').addEventListener('click', function (e) {
-        if (e.target.classList.contains('remove-row')) {
-            const rows = document.querySelectorAll('.item-row');
-            if (rows.length > 1) e.target.closest('.item-row').remove();
-        }
-    });
-</script>
-@endpush

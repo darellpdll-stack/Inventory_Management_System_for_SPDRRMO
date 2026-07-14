@@ -3,9 +3,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0">
-    {{ isset($activeCategory) ? $activeCategory->name : 'All Supply Items' }}
-</h4>
+    <h4 class="fw-bold mb-0">Supply Items</h4>
     <a href="{{ route('supplies.create') }}" class="btn btn-primary">+ Add Item</a>
 </div>
 
@@ -14,15 +12,12 @@
         <select name="category" class="form-select" onchange="this.form.submit()">
             <option value="">All Categories</option>
             @foreach($categories as $cat)
-                <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>
-                    {{ $cat->name }}
-                </option>
+                <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
             @endforeach
         </select>
     </div>
     <div class="col-md-5">
-        <input type="text" name="search" value="{{ request('search') }}"
-               class="form-control" placeholder="Search item name...">
+        <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search description or product code...">
     </div>
     <div class="col-md-3">
         <button class="btn btn-outline-secondary w-100">Search</button>
@@ -34,10 +29,11 @@
         <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>Item Name</th>
+                    <th>Description</th>
+                    <th>Product Code</th>
                     <th>Category</th>
-                    <th>Stock</th>
                     <th>Unit</th>
+                    <th class="text-center">Balance</th>
                     <th>Expiry</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
@@ -46,31 +42,35 @@
             <tbody>
                 @forelse($items as $item)
                 <tr>
-                    <td>{{ $item->item_name }}</td>
-                    <td>{{ $item->category->name }}</td>
-                    <td>
-                        {{ $item->current_stock }}
+                    <td>{{ $item->description }}</td>
+                    <td><span class="text-muted small">{{ $item->product_code }}</span></td>
+                    <td>{{ $item->category->name ?? '—' }}</td>
+                    <td>{{ $item->unit }}</td>
+                    <td class="text-center">
+                        {{ $item->balance_per_card }}
                         @if($item->isLowStock())
                             <span class="badge bg-danger ms-1">Low</span>
                         @endif
                     </td>
-                    <td>{{ $item->unit }}</td>
-                    <td>
                     @php $exp = $item->expiryStatus(); @endphp
-                    @if($exp === 'none')
-                        <span class="text-muted">—</span>
-                    @elseif($exp === 'expired')
-                        <span class="badge bg-dark">Expired</span>
-                        <div class="small text-muted">{{ $item->expiration_date->format('M d, Y') }}</div>
-                    @elseif($exp === 'expiring')
-                        <span class="badge bg-warning text-dark">Expiring Soon</span>
-                        <div class="small text-muted">{{ $item->expiration_date->format('M d, Y') }}</div>
-                    @else
-                        <span class="badge bg-success">Safe</span>
-                        <div class="small text-muted">{{ $item->expiration_date->format('M d, Y') }}</div>
-                    @endif
-                </td>
-                    <td><span class="badge bg-success">{{ ucfirst($item->status) }}</span></td>
+                    <td>
+                        @if($item->expiration_date)
+                            {{ $item->expiration_date->format('M d, Y') }}
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($exp === 'none')
+                            <span class="text-muted">—</span>
+                        @elseif($exp === 'expired')
+                            <span class="badge bg-dark">Expired</span>
+                        @elseif($exp === 'expiring')
+                            <span class="badge bg-warning text-dark">Expiring Soon</span>
+                        @else
+                            <span class="badge bg-success">Safe</span>
+                        @endif
+                    </td>
                     <td class="text-end">
                         <a href="{{ route('supplies.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                         <form action="{{ route('supplies.destroy', $item) }}" method="POST" class="d-inline"
@@ -81,7 +81,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" class="text-center text-muted py-3">No supply items found.</td></tr>
+                <tr><td colspan="8" class="text-center text-muted py-3">No supply items found.</td></tr>
                 @endforelse
             </tbody>
         </table>

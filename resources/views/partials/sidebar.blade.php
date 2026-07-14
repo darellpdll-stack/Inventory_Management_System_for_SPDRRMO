@@ -17,12 +17,12 @@
             <a href="{{ route('supplies.index') }}" class="nav-link {{ request()->routeIs('supplies.*') ? 'active' : '' }}">
                 <i class="bi bi-box-seam"></i> Supplies
             </a>
-        
         <li class="nav-item">
-            <a href="{{ route('deployments.index') }}" class="nav-link {{ request()->routeIs('deployments.*') ? 'active' : '' }}">
-                <i class="bi bi-truck"></i> Deployments
-            </a>
+        <a href="{{ route('withdrawals.index') }}" class="nav-link {{ request()->routeIs('withdrawals.*') ? 'active' : '' }}">
+        <i class="bi bi-box-arrow-up"></i> Withdrawals
+        </a>
         </li>
+        
         </li>
             <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
     <i class="bi bi-people"></i> Personnel
