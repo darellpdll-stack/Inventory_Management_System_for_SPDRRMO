@@ -25,8 +25,8 @@
                         <div class="notif-item d-flex align-items-start px-2 py-2">
                             <a class="flex-grow-1 text-decoration-none text-dark" href="{{ route('supplies.edit', $item) }}">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-semibold">{{ $item->item_name }}</span>
-                                    <span class="badge bg-danger">{{ $item->current_stock }} left</span>
+                                    <span class="fw-semibold">{{ $item->description }}</span>
+                                    <span class="badge bg-danger">{{ $item->balance_per_card }} left</span>
                                 </div>
                                 <div class="small text-muted">
                                     {{ $item->category->name }} · Min: {{ $item->minimum_stock }} {{ $item->unit }}
@@ -50,7 +50,7 @@
                         <div class="notif-item d-flex align-items-start px-2 py-2">
                             <a class="flex-grow-1 text-decoration-none text-dark" href="{{ route('supplies.edit', $item) }}">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-semibold">{{ $item->item_name }}</span>
+                                    <span class="fw-semibold">{{ $item->description }}</span>
                                     @if($item->expiration_date->isPast())
                                         <span class="badge bg-dark">Expired</span>
                                     @else
@@ -64,10 +64,6 @@
                                     <i class="bi bi-box-arrow-in-right"></i> Click to view
                                 </div>
                             </a>
-                            <form action="{{ route('supplies.dismiss', $item) }}" method="POST" class="ms-2">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-link text-muted p-0" title="Dismiss">✕</button>
-                            </form>
                         </div>
                     </li>
                 @empty

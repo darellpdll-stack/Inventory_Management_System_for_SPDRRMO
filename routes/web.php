@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeploymentController;
 use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\DashboardController;
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
@@ -16,7 +17,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -31,7 +32,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
     Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
     Route::get('/supplies/category/{category}', [SupplyItemController::class, 'category'])->name('supplies.category');
-    Route::post('/supplies/{supply}/dismiss', [SupplyItemController::class, 'dismissExpiry'])->name('supplies.dismiss');
     Route::get('/deployments', [DeploymentController::class, 'index'])->name('deployments.index');
     Route::get('/deployments/create', [DeploymentController::class, 'create'])->name('deployments.create');
     Route::post('/deployments', [DeploymentController::class, 'store'])->name('deployments.store');

@@ -58,4 +58,9 @@ class SupplyItem extends Model
         $qty = $this->shortageQty();
         return $qty === null ? null : $qty * (float) $this->unit_value;
     }
+    
+    public function withdrawalItems()
+    {
+        return $this->hasMany(WithdrawalItem::class, 'supply_item_id');
+    }
 }

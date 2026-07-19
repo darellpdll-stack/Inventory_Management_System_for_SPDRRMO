@@ -23,7 +23,6 @@ public function boot(): void
 
             $expiringItems = SupplyItem::needsExpiryAttention()
                 ->with('category')
-                ->whereNotIn('id', $dismissedIds)
                 ->orderBy('expiration_date')
                 ->get();
 

@@ -2,6 +2,11 @@
 @section('title', 'Withdrawals')
 
 @section('content')
+<style>
+    .group-tint { background-color: #f7f9f7; }
+    .group-start { border-top: 2px solid #d8ded9; }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold mb-0">Withdrawals</h4>
     <a href="{{ route('withdrawals.create') }}" class="btn btn-primary">+ New Withdrawal</a>
@@ -26,7 +31,7 @@
 
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
+        <table class="table mb-0 align-middle">
             <thead class="table-light">
                 <tr>
                     <th>No.</th>
@@ -39,17 +44,42 @@
                 </tr>
             </thead>
             <tbody>
-                @php $rowNo = 1; @endphp
+                @php $rowNo = 1; $groupIndex = 0; @endphp
                 @forelse($withdrawals as $w)
-                    @foreach($w->items as $line)
-                    <tr>
+                    @php $groupIndex++; @endphp
+                    @foreach($w->items as $i => $line)
+                    <tr class="{{ $groupIndex % 2 === 0 ? 'group-tint' : '' }} {{ $i === 0 && $groupIndex > 1 ? 'group-start' : '' }}">
                         <td>{{ $rowNo++ }}</td>
                         <td>{{ $line->quantity }} {{ $line->supplyItem->unit ?? '' }}</td>
                         <td>{{ $line->supplyItem->description ?? '—' }}</td>
-                        <td>{{ $w->withdrawn_by }}</td>
-                        <td>{{ $w->date_withdrawn->format('M d, Y') }}</td>
-                        <td>{{ $w->date_returned ? $w->date_returned->format('M d, Y') : '—' }}</td>
-                        <td>{{ $w->remark ?? '—' }}</td>
+                        <td>
+                            @if($i === 0)
+                                {{ $w->withdrawn_by }}
+                            @else
+                                <span class="text-muted">"</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($i === 0)
+                                {{ $w->date_withdrawn->format('M d, Y') }}
+                            @else
+                                <span class="text-muted">"</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($i === 0)
+                                {{ $w->date_returned ? $w->date_returned->format('M d, Y') : '—' }}
+                            @else
+                                <span class="text-muted">"</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($i === 0)
+                                {{ $w->remark ?? '—' }}
+                            @else
+                                <span class="text-muted">"</span>
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                 @empty

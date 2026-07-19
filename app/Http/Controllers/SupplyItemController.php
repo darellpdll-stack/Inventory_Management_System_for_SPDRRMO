@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SupplyCategory;
 use App\Models\SupplyItem;
-use App\Models\ExpiryDismissal;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -109,18 +109,15 @@ class SupplyItemController extends Controller
     }
 
     public function destroy(SupplyItem $supply)
-    {
-        $supply->delete();
-        return back()->with('success', 'Supply item deleted.');
+{
+    // don't allow deleting an item that has withdrawal history
+    if ($supply->withdrawalItems()->exists()) {
+        return back()->with('error', "Can't delete \"{$supply->description}\" — it has withdrawal records. Deleting it would break the withdrawal history.");
     }
 
-    public function dismissExpiry(SupplyItem $supply)
-    {
-        ExpiryDismissal::firstOrCreate([
-            'user_id' => Auth::id(),
-            'supply_item_id' => $supply->id,
-        ]);
+    $supply->delete();
+    return back()->with('success', 'Supply item deleted.');
+}
 
-        return back();
-    }
+    
 }
