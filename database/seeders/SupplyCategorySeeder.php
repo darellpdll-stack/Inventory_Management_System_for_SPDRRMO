@@ -8,20 +8,17 @@ use App\Models\SupplyCategory;
 
 class SupplyCategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+   public function run(): void
 {
     $categories = [
-        ['name' => 'Ink & Toners', 'description' => 'Printer inks and toner cartridges'],
-        ['name' => 'Computer Accessories', 'description' => 'Peripherals and computer parts'],
+        ['name' => 'Office Supplies', 'description' => 'General office materials (OFS)'],
+        ['name' => 'Other Supplies', 'description' => 'Janitorial, hardware, and other supplies (JOS)'],
+        ['name' => 'Inks, Toners & Computer Accessories', 'description' => 'Inks, toners, and computer items (ITC)'],
         ['name' => 'Medical', 'description' => 'Medicines, first aid, and medical items'],
-        ['name' => 'Office', 'description' => 'Paper, pens, and office materials'],
     ];
 
     foreach ($categories as $category) {
-        SupplyCategory::firstOrCreate(['name' => $category['name']], $category);
+        \App\Models\SupplyCategory::firstOrCreate(['name' => $category['name']], $category);
     }
 }
 }

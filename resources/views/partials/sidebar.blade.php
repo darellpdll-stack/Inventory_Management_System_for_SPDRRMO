@@ -18,6 +18,11 @@
                 <i class="bi bi-box-seam"></i> Supplies
             </a>
         <li class="nav-item">
+            <li class="nav-item">
+    <a href="{{ route('property.index') }}" class="nav-link {{ request()->routeIs('property.*') ? 'active' : '' }}">
+                <i class="bi bi-hdd-stack"></i> Property
+            </a>
+        </li>
         <a href="{{ route('withdrawals.index') }}" class="nav-link {{ request()->routeIs('withdrawals.*') ? 'active' : '' }}">
         <i class="bi bi-box-arrow-up"></i> Withdrawals
         </a>

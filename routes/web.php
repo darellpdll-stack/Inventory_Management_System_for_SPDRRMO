@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeploymentController;
 use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PropertyItemController;
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
@@ -50,5 +51,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
     Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
     Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'show'])->name('withdrawals.show');
+    // Property — all logged-in users can view and add
+Route::get('/property', [PropertyItemController::class, 'index'])->name('property.index');
+Route::get('/property/create', [PropertyItemController::class, 'create'])->name('property.create');
+Route::post('/property', [PropertyItemController::class, 'store'])->name('property.store');
+
+// Property — admin only: edit, update, delete
+Route::middleware('admin')->group(function () {
+    Route::get('/property/{property}/edit', [PropertyItemController::class, 'edit'])->name('property.edit');
+    Route::put('/property/{property}', [PropertyItemController::class, 'update'])->name('property.update');
+    Route::delete('/property/{property}', [PropertyItemController::class, 'destroy'])->name('property.destroy');
+});
 });
 });
