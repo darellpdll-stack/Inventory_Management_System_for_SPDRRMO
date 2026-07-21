@@ -58,11 +58,39 @@ class PersonnelController extends Controller
         return redirect()->route('personnel.index')->with('success', 'Personnel added.');
     }
 
-    public function show(Personnel $person)
-    {
-        return view('personnel.show', compact('person'));
+   public function show(Request $request, Personnel $person)
+{
+    $query = $person->propertyItems()->with('category');
+
+    // filter by category if selected
+    if ($request->filled('category')) {
+        $query->where('category_id', $request->category);
     }
 
+    $grouped = $query->orderBy('description')->orderBy('property_no')->get()
+        ->groupBy(fn ($item) => $item->description . '|' . $item->category_id . '|' . $item->type)
+        ->map(function ($items) {
+            $first = $items->first();
+            // gather every property number across the grouped items (expanding ranges)
+            $allNumbers = $items->flatMap(fn ($i) => $i->propertyNoList())->values()->all();
+            return (object) [
+                'description' => $first->description,
+                'category' => $first->category->name ?? '—',
+                'type' => $first->type,
+                'unit' => $first->unit,
+                'qty' => $items->sum('on_hand_per_count'),
+                'numbers' => $allNumbers,
+            ];
+        })
+        ->values();
+
+    // categories this person actually has property in (for the filter dropdown)
+    $personCategories = \App\Models\PropertyCategory::whereIn('id',
+        $person->propertyItems()->distinct()->pluck('category_id')
+    )->orderBy('name')->get();
+
+    return view('personnel.show', compact('person', 'grouped', 'personCategories'));
+}
     public function edit(Personnel $person)
     {
         return view('personnel.edit', compact('person'));

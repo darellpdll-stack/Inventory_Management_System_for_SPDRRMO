@@ -43,23 +43,26 @@ class PropertyItemController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'type' => 'required|in:semi-expendable,expendable',
-            'category_id' => 'required|exists:property_categories,id',
-            'personnel_id' => 'nullable|exists:personnel,id',
-            'description' => 'required|string|max:255',
-            'property_no' => 'nullable|string|max:100',
-            'unit' => 'required|string|max:50',
-            'unit_value' => 'nullable|numeric|min:0',
-            'on_hand_per_count' => 'required|integer|min:0',
-            'remarks' => 'nullable|string|max:255',
-        ]);
+{
+    $validated = $request->validate([
+        'type' => 'required|in:semi-expendable,expendable',
+        'category_id' => 'required|exists:property_categories,id',
+        'personnel_id' => 'nullable|exists:personnel,id',
+        'description' => 'required|string|max:255',
+        'property_no' => 'required|string|max:100',
+        'quantity' => 'required|integer|min:1|max:9999',
+        'unit' => 'required|string|max:50',
+        'unit_value' => 'nullable|numeric|min:0',
+        'remarks' => 'nullable|string|max:255',
+    ]);
 
-        PropertyItem::create($validated);
+    // on_hand equals the quantity
+    $validated['on_hand_per_count'] = $validated['quantity'];
 
-        return redirect()->route('property.index')->with('success', 'Property item added.');
-    }
+    PropertyItem::create($validated);
+
+    return redirect()->route('property.index')->with('success', 'Property item added.');
+}
 
     public function edit(PropertyItem $property)
     {
@@ -92,4 +95,35 @@ class PropertyItemController extends Controller
         $property->delete();
         return back()->with('success', 'Property item deleted.');
     }
+
+    public function reportOptions()
+{
+    $categories = PropertyCategory::orderBy('name')->get();
+    return view('property.report-options', compact('categories'));
+}
+
+public function report(Request $request)
+{
+    $request->validate([
+        'category_id' => 'required|exists:property_categories,id',
+        'type' => 'required|in:semi-expendable,expendable',
+    ]);
+
+    $category = PropertyCategory::findOrFail($request->category_id);
+
+    $items = PropertyItem::with('personnel')
+        ->where('category_id', $category->id)
+        ->where('type', $request->type)
+        ->orderBy('personnel_id')
+        ->orderBy('description')
+        ->orderBy('property_no')
+        ->get();
+
+    // grand total = sum of (unit_value × on_hand_per_count)
+    $grandTotal = $items->sum(function ($item) {
+        return (float) $item->unit_value * (int) $item->on_hand_per_count;
+    });
+
+    return view('property.report', compact('category', 'items', 'grandTotal', 'request'));
+}
 }
