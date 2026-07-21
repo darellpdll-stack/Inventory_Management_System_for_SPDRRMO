@@ -10,30 +10,72 @@ use Illuminate\Http\Request;
 class PropertyItemController extends Controller
 {
     public function index(Request $request)
-    {
-        $categories = PropertyCategory::orderBy('name')->get();
-        $query = PropertyItem::with(['category', 'personnel']);
+{
+    $categories = PropertyCategory::orderBy('name')->get();
+    $query = PropertyItem::with(['category', 'personnel']);
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('description', 'ilike', '%' . $search . '%')
-                  ->orWhere('property_no', 'ilike', '%' . $search . '%');
-            });
-        }
-
-        $items = $query->orderBy('description')->paginate(15)->withQueryString();
-
-        return view('property.index', compact('items', 'categories'));
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
     }
+
+    if ($request->filled('category')) {
+        $query->where('category_id', $request->category);
+    }
+
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+
+        // get all IDs first, then filter by description OR range match
+        $matchingIds = PropertyItem::all()->filter(function ($item) use ($search) {
+            // match description
+            if (stripos($item->description, $search) !== false) {
+                return true;
+            }
+            // match if search falls within this item's property number range
+            return $this->numberInRange($item, $search);
+        })->pluck('id');
+
+        $query->whereIn('id', $matchingIds);
+    }
+
+    $items = $query->orderBy('description')->paginate(15)->withQueryString();
+
+    return view('property.index', compact('items', 'categories'));
+}
+
+// checks if a searched property number falls within an item's generated range
+private function numberInRange(PropertyItem $item, string $search): bool
+{
+    if (!$item->property_no) {
+        return false;
+    }
+
+    // direct match on the stored (starting) number
+    if (stripos($item->property_no, $search) !== false) {
+        return true;
+    }
+
+    // split both the item's start number and the search into prefix + digits
+    if (preg_match('/^(.*?)(\d+)$/', $item->property_no, $itemM)
+        && preg_match('/^(.*?)(\d+)$/', $search, $searchM)) {
+
+        $itemPrefix = $itemM[1];
+        $searchPrefix = $searchM[1];
+
+        // prefixes must match (e.g. "24-05-")
+        if ($itemPrefix !== $searchPrefix) {
+            return false;
+        }
+
+        $start = (int) $itemM[2];
+        $end = $start + ($item->quantity ?? 1) - 1;
+        $target = (int) $searchM[2];
+
+        return $target >= $start && $target <= $end;
+    }
+
+    return false;
+}
 
     public function create()
     {
@@ -72,23 +114,26 @@ class PropertyItemController extends Controller
     }
 
     public function update(Request $request, PropertyItem $property)
-    {
-        $validated = $request->validate([
-            'type' => 'required|in:semi-expendable,expendable',
-            'category_id' => 'required|exists:property_categories,id',
-            'personnel_id' => 'nullable|exists:personnel,id',
-            'description' => 'required|string|max:255',
-            'property_no' => 'nullable|string|max:100',
-            'unit' => 'required|string|max:50',
-            'unit_value' => 'nullable|numeric|min:0',
-            'on_hand_per_count' => 'required|integer|min:0',
-            'remarks' => 'nullable|string|max:255',
-        ]);
+{
+    $validated = $request->validate([
+        'type' => 'required|in:semi-expendable,expendable',
+        'category_id' => 'required|exists:property_categories,id',
+        'personnel_id' => 'nullable|exists:personnel,id',
+        'description' => 'required|string|max:255',
+        'property_no' => 'required|string|max:100',
+        'quantity' => 'required|integer|min:1|max:9999',
+        'unit' => 'required|string|max:50',
+        'unit_value' => 'nullable|numeric|min:0',
+        'remarks' => 'nullable|string|max:255',
+    ]);
 
-        $property->update($validated);
+    // on_hand equals the quantity
+    $validated['on_hand_per_count'] = $validated['quantity'];
 
-        return redirect()->route('property.index')->with('success', 'Property item updated.');
-    }
+    $property->update($validated);
+
+    return redirect()->route('property.index')->with('success', 'Property item updated.');
+}
 
     public function destroy(PropertyItem $property)
     {

@@ -50,38 +50,35 @@
             </thead>
             <tbody>
     @forelse($items as $item)
-        @php $numbers = $item->propertyNoList(); @endphp
-        @foreach($numbers as $index => $no)
-        <tr>
-            <td>{{ $index === 0 ? ($item->personnel->name ?? '—') : '' }}</td>
-            <td>{{ $index === 0 ? $item->description : '' }}</td>
-            <td class="text-muted small">{{ $no }}</td>
-            <td>{{ $index === 0 ? $item->unit : '' }}</td>
-            <td class="text-center">{{ $index === 0 ? $item->on_hand_per_count : '' }}</td>
-            <td>
-                @if($index === 0)
-                    @if($item->type === 'semi-expendable')
-                        <span class="badge bg-primary">Semi-exp</span>
-                    @else
-                        <span class="badge bg-secondary">Expendable</span>
-                    @endif
-                @endif
-            </td>
-            <td>{{ $index === 0 ? ($item->remarks ?? '—') : '' }}</td>
-            <td class="text-end">
-                @if($index === 0 && Auth::user()->role === 'admin')
-                    <a href="{{ route('property.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <form action="{{ route('property.destroy', $item) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Delete this property item?');">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
-                @endif
-            </td>
-        </tr>
-        @endforeach
+    <tr>
+        <td>{{ $item->personnel->name ?? '—' }}</td>
+        <td>{{ $item->description }}</td>
+        <td class="text-muted small">{{ $item->propertyNoRange() }}</td>
+        <td>{{ $item->unit }}</td>
+        <td class="text-center">{{ $item->on_hand_per_count }}</td>
+        <td>
+            @if($item->type === 'semi-expendable')
+                <span class="badge bg-primary">Semi-exp</span>
+            @else
+                <span class="badge bg-secondary">Expendable</span>
+            @endif
+        </td>
+        <td>{{ $item->remarks ?? '—' }}</td>
+        <td class="text-end">
+            @if(Auth::user()->role === 'admin')
+                <a href="{{ route('property.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <form action="{{ route('property.destroy', $item) }}" method="POST" class="d-inline"
+                      onsubmit="return confirm('Delete this property item?');">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            @else
+                <span class="text-muted small">—</span>
+            @endif
+        </td>
+    </tr>
     @empty
-        <tr><td colspan="8" class="text-center text-muted py-3">No property items found.</td></tr>
+    <tr><td colspan="8" class="text-center text-muted py-3">No property items found.</td></tr>
     @endforelse
 </tbody>
         </table>

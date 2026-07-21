@@ -40,4 +40,22 @@ class PropertyItem extends Model
 
     return [$this->property_no];
 }
+
+public function propertyNoRange(): string
+{
+    if ($this->quantity <= 1 || !$this->property_no) {
+        return $this->property_no ?? '—';
+    }
+
+    if (preg_match('/^(.*?)(\d+)$/', $this->property_no, $m)) {
+        $prefix = $m[1];
+        $start = (int) $m[2];
+        $pad = strlen($m[2]);
+        $end = $start + $this->quantity - 1;
+        return $prefix . str_pad($start, $pad, '0', STR_PAD_LEFT)
+             . ' to ' . $prefix . str_pad($end, $pad, '0', STR_PAD_LEFT);
+    }
+
+    return $this->property_no ?? '—';
+}
 }

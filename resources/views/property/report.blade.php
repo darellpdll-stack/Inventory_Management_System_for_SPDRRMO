@@ -16,9 +16,10 @@
         td.num { text-align: right; }
         td.center { text-align: center; }
         .grand td { font-weight: bold; }
-        .signatures { display: flex; justify-content: space-between; margin-top: 45px; font-size: 12px; }
-        .sig-block { width: 45%; text-align: center; }
-        .sig-name-wrap { margin-top: 40px; }
+        .signatures { display: flex; gap: 60px; margin-top: 45px; font-size: 12px; }
+        .sig-block { width: 240px; }
+        .sig-label { margin-bottom: 18px; }
+        .sig-name-wrap { text-align: center; }
         .sig-name {
             display: inline-block;
             font-weight: bold;
@@ -26,7 +27,7 @@
             border-bottom: 2px solid #000;
             padding-bottom: 1px;
         }
-        .sig-title { font-size: 11px; margin-top: 2px; }
+        .sig-title { text-align: center; font-size: 11px; }
         .toolbar { margin-bottom: 16px; }
         .toolbar a, .toolbar button { font-size: 14px; }
         @page { size: landscape; }
@@ -54,7 +55,6 @@
                 <th>Unit of<br>Measure</th>
                 <th>Unit Value</th>
                 <th>On Hand Per<br>Count (Quantity)</th>
-                <th>Total Value</th>
                 <th>Remarks</th>
             </tr>
         </thead>
@@ -69,7 +69,6 @@
             <td class="center">{{ $index === 0 ? $item->unit : '' }}</td>
             <td class="num">{{ $item->unit_value ? number_format($item->unit_value, 2) : '' }}</td>
             <td class="center">{{ $index === 0 ? $item->on_hand_per_count : '' }}</td>
-            <td class="num">{{ $index === 0 ? number_format((float)$item->unit_value * (int)$item->on_hand_per_count, 2) : '' }}</td>
             <td>{{ $index === 0 ? ($item->remarks ?? '') : '' }}</td>
         </tr>
         @endforeach
@@ -77,25 +76,28 @@
         <tr><td colspan="8" class="center">No items in this category.</td></tr>
     @endforelse
     <tr class="grand">
-        <td>GRAND TOTAL</td>
-        <td colspan="5"></td>
-        <td class="num">₱{{ number_format($grandTotal, 2) }}</td>
-        <td></td>
-    </tr>
+    <td>GRAND TOTAL</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td class="num">₱{{ number_format($grandTotal, 2) }}</td>
+    <td></td>
+    <td></td>
+</tr>
 </tbody>
     </table>
 
     <div class="signatures">
-        <div class="sig-block">
-            <div>Prepared by:</div>
-            <div class="sig-name-wrap"><span class="sig-name">CECILIA V. HAINTO</span></div>
-            <div class="sig-title">Supervising Administrative Officer</div>
-        </div>
-        <div class="sig-block">
-            <div>Approved by:</div>
-            <div class="sig-name-wrap"><span class="sig-name">RADEN D. DIMAANO, C.E.</span></div>
-            <div class="sig-title">PGDH-PDRRMO</div>
-        </div>
+    <div class="sig-block">
+        <div class="sig-label">Prepared by:</div>
+        <div class="sig-name-wrap"><span class="sig-name">CECILIA V. HAINTO</span></div>
+        <div class="sig-title">Supervising Administrative Officer</div>
     </div>
+    <div class="sig-block">
+        <div class="sig-label">Approved by:</div>
+        <div class="sig-name-wrap"><span class="sig-name">RADEN D. DIMAANO, C.E.</span></div>
+        <div class="sig-title">PGDH-PDRRMO</div>
+    </div>
+</div>
 </body>
 </html>
