@@ -7,8 +7,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyItemController;
+use App\Http\Controllers\SupplyRequestController;
 
 Route::get('/', fn () => redirect()->route('login'));
+
+// Public supply request (QR code destination) — no login required
+Route::get('/qr_code/request', [SupplyRequestController::class, 'create'])->name('requests.create');
+Route::post('/qr_code/request', [SupplyRequestController::class, 'store'])->name('requests.store');
+Route::get('/qr_code/submitted', [SupplyRequestController::class, 'submitted'])->name('requests.submitted');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -66,5 +72,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/property/{property}/edit', [PropertyItemController::class, 'edit'])->name('property.edit');
         Route::put('/property/{property}', [PropertyItemController::class, 'update'])->name('property.update');
         Route::delete('/property/{property}', [PropertyItemController::class, 'destroy'])->name('property.destroy');
+
+        // Supply requests (admin review)
+        Route::get('/requests', [SupplyRequestController::class, 'index'])->name('requests.index');
+        Route::get('/requests/qr', [SupplyRequestController::class, 'qrCode'])->name('requests.qr');
+        Route::post('/requests/{supplyRequest}/approve', [SupplyRequestController::class, 'approve'])->name('requests.approve');
+        Route::post('/requests/{supplyRequest}/decline', [SupplyRequestController::class, 'decline'])->name('requests.decline');
     });
 });

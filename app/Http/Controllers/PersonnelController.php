@@ -62,7 +62,6 @@ class PersonnelController extends Controller
 {
     $query = $person->propertyItems()->with('category');
 
-    // filter by category if selected
     if ($request->filled('category')) {
         $query->where('category_id', $request->category);
     }
@@ -71,20 +70,23 @@ class PersonnelController extends Controller
         ->groupBy(fn ($item) => $item->description . '|' . $item->category_id . '|' . $item->type)
         ->map(function ($items) {
             $first = $items->first();
-            // gather every property number across the grouped items (expanding ranges)
-            $allNumbers = $items->flatMap(fn ($i) => $i->propertyNoList())->values()->all();
+            // build a compact range from the grouped items
+            $allNumbers = $items->flatMap(fn ($i) => $i->propertyNoList())->values();
+            $range = $allNumbers->count() > 1
+                ? $allNumbers->first() . ' to ' . $allNumbers->last()
+                : ($allNumbers->first() ?? '—');
+
             return (object) [
                 'description' => $first->description,
                 'category' => $first->category->name ?? '—',
                 'type' => $first->type,
                 'unit' => $first->unit,
                 'qty' => $items->sum('on_hand_per_count'),
-                'numbers' => $allNumbers,
+                'range' => $range,
             ];
         })
         ->values();
 
-    // categories this person actually has property in (for the filter dropdown)
     $personCategories = \App\Models\PropertyCategory::whereIn('id',
         $person->propertyItems()->distinct()->pluck('category_id')
     )->orderBy('name')->get();

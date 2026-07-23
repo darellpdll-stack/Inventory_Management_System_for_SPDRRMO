@@ -18,9 +18,6 @@ public function boot(): void
 {
     View::composer('layouts.app', function ($view) {
         if (Auth::check()) {
-            $dismissedIds = \App\Models\ExpiryDismissal::where('user_id', Auth::id())
-                ->pluck('supply_item_id');
-
             $expiringItems = SupplyItem::needsExpiryAttention()
                 ->with('category')
                 ->orderBy('expiration_date')
@@ -32,15 +29,19 @@ public function boot(): void
                 ->get();
 
             $navCategories = \App\Models\SupplyCategory::orderBy('name')->get();
+
+            $pendingRequestCount = \App\Models\SupplyRequest::where('status', 'pending')->count();
         } else {
             $expiringItems = collect();
             $lowStockItems = collect();
             $navCategories = collect();
+            $pendingRequestCount = 0;
         }
 
         $view->with('expiringItems', $expiringItems);
         $view->with('lowStockItems', $lowStockItems);
         $view->with('navCategories', $navCategories);
+        $view->with('pendingRequestCount', $pendingRequestCount);
     });
 }
 }

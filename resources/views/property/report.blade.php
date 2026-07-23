@@ -8,13 +8,14 @@
         body { margin: 30px; color: #000; font-size: 12px; }
         .title-block { text-align: center; margin-bottom: 14px; }
         .title-block .line1 { font-weight: bold; font-size: 13px; text-transform: uppercase; }
-        .title-block .line2 { font-weight: bold; font-size: 12px; text-transform: uppercase; margin-top: 2px; }
+        .title-block .line2 { font-weight: bold; font-size: 12px; text-transform: uppercase; margin-top: 2px; text-decoration: underline; }
         .title-block .line3 { font-size: 12px; font-style: italic; margin-top: 2px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #000; padding: 4px 6px; font-size: 11px; vertical-align: top; }
-        th { background: #f0f0f0; text-align: center; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 2px 4px; font-size: 10px; vertical-align: top; line-height: 1.2; overflow-wrap: break-word; }
+        th { background: #f0f0f0; text-align: center !important; font-weight: bold; vertical-align: middle; }
         td.num { text-align: right; }
         td.center { text-align: center; }
+        td.person { font-weight: bold; }
         .grand td { font-weight: bold; }
         .signatures { display: flex; gap: 60px; margin-top: 45px; font-size: 12px; }
         .sig-block { width: 240px; }
@@ -31,7 +32,14 @@
         .toolbar { margin-bottom: 16px; }
         .toolbar a, .toolbar button { font-size: 14px; }
         @page { size: landscape; }
-        @media print { .toolbar { display: none; } body { margin: 0; } }
+        @media print {
+            .toolbar { display: none; }
+            body { margin: 0; }
+            .signatures { margin-top: 20px; page-break-inside: avoid; break-inside: avoid; }
+            .sig-block { page-break-inside: avoid; break-inside: avoid; }
+            tr { page-break-inside: avoid; break-inside: avoid; }
+            thead { display: table-header-group; }
+        }
     </style>
 </head>
 <body>
@@ -47,10 +55,19 @@
     </div>
 
     <table>
+        <colgroup>
+        <col style="width:18%">  {{-- Accountable Person --}}
+        <col style="width:30%">  {{-- Description --}}
+        <col style="width:14%">  {{-- Property No. --}}
+        <col style="width:8%">   {{-- Unit of Measure --}}
+        <col style="width:10%">  {{-- Unit Value --}}
+        <col style="width:8%">   {{-- On Hand --}}
+        <col style="width:12%">  {{-- Remarks --}}
+    </colgroup>
         <thead>
             <tr>
-                <th>Accountable Person</th>
-                <th>Description</th>
+                <th>ACCOUNTABLE PERSON</th>
+                <th>DESCRIPTION</th>
                 <th>{{ $request->type === 'semi-expendable' ? 'Semi-expendable' : 'Expendable' }}<br>Property No.</th>
                 <th>Unit of<br>Measure</th>
                 <th>Unit Value</th>
@@ -60,16 +77,20 @@
         </thead>
         <tbody>
     @forelse($items as $item)
-        @php $numbers = $item->propertyNoList(); @endphp
+        @php
+            $numbers = $item->quantity >= 10
+                ? [$item->propertyNoRange()]
+                : $item->propertyNoList();
+        @endphp
         @foreach($numbers as $index => $no)
         <tr>
-            <td>{{ $index === 0 ? ($item->personnel->name ?? '—') : '' }}</td>
+            <td class="person">{{ $index === 0 ? strtoupper($item->personnel->name ?? '—') : '' }}</td>
             <td>{{ $index === 0 ? $item->description : '' }}</td>
             <td class="center">{{ $no }}</td>
             <td class="center">{{ $index === 0 ? $item->unit : '' }}</td>
             <td class="num">{{ $item->unit_value ? number_format($item->unit_value, 2) : '' }}</td>
             <td class="center">{{ $index === 0 ? $item->on_hand_per_count : '' }}</td>
-            <td>{{ $index === 0 ? ($item->remarks ?? '') : '' }}</td>
+            <td class="center">{{ $index === 0 ? ($item->remarks ?? '') : '' }}</td>
         </tr>
         @endforeach
     @empty

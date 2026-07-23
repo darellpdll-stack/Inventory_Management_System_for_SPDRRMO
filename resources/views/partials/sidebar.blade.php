@@ -36,6 +36,17 @@
         <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
     <i class="bi bi-person-lock"></i> Manage Users
         </a>
+
+        <li class="nav-item">
+    <a href="{{ route('requests.index') }}" class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}">
+        <i class="bi bi-inbox"></i> Requests
+        @if(($pendingRequestCount ?? 0) > 0)
+            <span class="nav-badge">{{ $pendingRequestCount }}</span>
+        @endif
+    </a>
+</li>
+
+
         @endif
     </ul>
 

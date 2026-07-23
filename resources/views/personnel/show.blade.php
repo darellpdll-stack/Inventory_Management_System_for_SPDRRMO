@@ -75,25 +75,21 @@
                         </thead>
                         <tbody>
                             @forelse($grouped as $g)
-                                @foreach($g->numbers as $index => $no)
-                                <tr>
-                                    <td>{{ $index === 0 ? $g->description : '' }}</td>
-                                    <td>{{ $index === 0 ? $g->category : '' }}</td>
-                                    <td class="text-center">{{ $index === 0 ? $g->qty . ' ' . $g->unit : '' }}</td>
-                                    <td class="text-muted small">{{ $no }}</td>
-                                    <td>
-                                        @if($index === 0)
-                                            @if($g->type === 'semi-expendable')
-                                                <span class="badge bg-primary">Semi-exp</span>
-                                            @else
-                                                <span class="badge bg-secondary">Expendable</span>
-                                            @endif
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
+                            <tr>
+                                <td>{{ $g->description }}</td>
+                                <td>{{ $g->category }}</td>
+                                <td class="text-center">{{ $g->qty }} {{ $g->unit }}</td>
+                                <td class="text-muted small">{{ $g->range }}</td>
+                                <td>
+                                    @if($g->type === 'semi-expendable')
+                                        <span class="badge bg-primary">Semi-exp</span>
+                                    @else
+                                        <span class="badge bg-secondary">Expendable</span>
+                                    @endif
+                                </td>
+                            </tr>
                             @empty
-                                <tr><td colspan="5" class="text-center text-muted py-3">No property assigned to this person.</td></tr>
+                            <tr><td colspan="5" class="text-center text-muted py-3">No property assigned to this person.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -10,6 +10,61 @@
     --line: #d8dde5;
     --danger: #790406;
 }
+/* ---------- Login ---------- */
+.login-wrap {
+    min-height: calc(100vh - 3rem);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+}
+.login-card { width: 100%; max-width: 350px; }
+
+.login-brand { text-align: center; margin-bottom: 1.25rem; }
+.login-brand .brand-mark {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: var(--accent); color: var(--sidebar-deep);
+    font-weight: 800; font-size: 1.4rem;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+
+.login-box {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 2rem 1.75rem;
+}
+.login-title {
+    text-align: center; font-weight: 800; font-size: 1.15rem;
+    color: var(--ink); margin-bottom: .15rem;
+}
+.login-sub {
+    text-align: center; font-size: .82rem; color: var(--muted); margin-bottom: 1.5rem;
+}
+.login-box .form-label {
+    font-size: .72rem; text-transform: uppercase; letter-spacing: .08em;
+    font-weight: 700; color: var(--muted); margin-bottom: .3rem;
+}
+.login-box .form-control { padding: .55rem .75rem; }
+.login-box .form-control:focus {
+    border-color: var(--sidebar);
+    box-shadow: 0 0 0 3px rgba(12,60,124,0.10);
+}
+.login-box .btn-primary { padding: .6rem; font-weight: 600; }
+
+.login-foot {
+    text-align: center; font-size: .7rem; color: var(--muted);
+    margin-top: 1.1rem; line-height: 1.4;
+}
+.login-hint {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--muted);
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    line-height: 1.5;
+}
 
 * { font-family: 'Archivo', system-ui, sans-serif; }
 body { background-color: var(--surface); color: var(--ink); }
@@ -73,9 +128,26 @@ body { background-color: var(--surface); color: var(--ink); }
     font-size: .66rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: .06em; padding: .18rem .5rem; border-radius: 999px; vertical-align: middle;
 }
+
 .role-admin { background-color: var(--accent-soft); color: #a8730c; border: 1px solid rgba(238,163,22,.3); }
 .role-staff { background-color: #e8edea; color: #4a5b60; border: 1px solid #d3dcd7; }
 .user-name { font-weight: 600; font-size: .92rem; color: var(--ink); }
+
+/* ---------- Request badges ---------- */
+.nav-badge {
+    background: var(--accent);
+    color: var(--sidebar-deep);
+    font-size: .68rem;
+    font-weight: 800;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
 
 /* ---------- Cards & tables ---------- */
 .card { border: 1px solid var(--line); box-shadow: none; border-radius: 10px; }
