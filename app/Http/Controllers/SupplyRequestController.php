@@ -15,17 +15,18 @@ use Illuminate\Support\Facades\Auth;
 class SupplyRequestController extends Controller
 {
     // public page — no login required
-    public function create()
+   public function create()
     {
         $personnel = Personnel::orderBy('name')->get();
         $items = SupplyItem::with('category')
             ->where('balance_per_card', '>', 0)
             ->orderBy('description')
             ->get();
+        $categories = \App\Models\SupplyCategory::orderBy('name')->get();
 
-        return view('requests.create', compact('personnel', 'items'));
+        return view('requests.create', compact('personnel', 'items', 'categories'));
     }
-
+    
     public function store(Request $request)
     {
         $validated = $request->validate([

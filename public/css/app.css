@@ -148,6 +148,24 @@ body { background-color: var(--surface); color: var(--ink); }
     justify-content: center;
     margin-left: auto;
 }
+/* ---------- Request form design ---------- */
+.picker-list { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.picker-item {
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+    width: 100%; text-align: left;
+    background: #fff; border: 0; border-bottom: 1px solid var(--line);
+    padding: .65rem .85rem;
+    transition: background .12s ease;
+}
+.picker-item:last-child { border-bottom: 0; }
+.picker-item:hover { background: #f1f5fa; }
+.picker-item .pi-name { font-weight: 600; font-size: .88rem; color: var(--ink); line-height: 1.25; }
+.picker-item .pi-cat { display: block; font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+.picker-item .pi-stock {
+    flex-shrink: 0; font-size: .72rem; font-weight: 700;
+    color: var(--sidebar); background: #e7edf5;
+    padding: .2rem .5rem; border-radius: 999px; white-space: nowrap;
+}
 
 /* ---------- Cards & tables ---------- */
 .card { border: 1px solid var(--line); box-shadow: none; border-radius: 10px; }

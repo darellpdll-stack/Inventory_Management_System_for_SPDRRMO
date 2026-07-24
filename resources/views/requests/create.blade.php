@@ -15,7 +15,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('requests.store') }}">
+                <form method="POST" action="{{ route('requests.store') }}" id="requestForm">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Your Name</label>
@@ -31,21 +31,18 @@
 
                     <label class="form-label">Items Requested</label>
                     <div id="itemRows">
-                        <div class="row g-2 mb-2 item-row">
-                            <div class="col-8">
-                                <select name="items[0][supply_item_id]" class="form-select" required>
-                                    <option value="">Select item</option>
-                                    @foreach($items as $item)
-                                        <option value="{{ $item->id }}">
-                                            {{ $item->description }} — {{ $item->balance_per_card }} {{ $item->unit }} available
-                                        </option>
-                                    @endforeach
-                                </select>
+                        <div class="row g-2 mb-3 item-row">
+                            <div class="col-12 col-sm-8 mb-1 mb-sm-0">
+                                <input type="hidden" name="items[0][supply_item_id]" class="item-id">
+                                <button type="button" class="btn btn-outline-secondary w-100 text-start pick-item text-truncate">
+                                    Choose an item…
+                                </button>
                             </div>
-                            <div class="col-3">
-                                <input type="number" name="items[0][quantity]" class="form-control" min="1" placeholder="Qty" required>
+                            <div class="col-9 col-sm-3">
+                                <input type="number" name="items[0][quantity]" inputmode="numeric"
+                                       class="form-control" min="1" placeholder="Qty" required>
                             </div>
-                            <div class="col-1 px-0">
+                            <div class="col-3 col-sm-1 px-sm-0">
                                 <button type="button" class="btn btn-outline-danger w-100 remove-row">×</button>
                             </div>
                         </div>
@@ -63,37 +60,120 @@
         </div>
     </div>
 </div>
+
+{{-- Item picker --}}
+<div class="modal fade" id="itemPicker" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold">Select an Item</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="pickerSearch" class="form-control mb-2" placeholder="Search item…">
+                <select id="pickerCategory" class="form-select form-select-sm mb-3">
+                    <option value="">All categories</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+
+                <div class="picker-list" id="pickerList">
+                    @foreach($items as $item)
+                    <button type="button" class="picker-item"
+                            data-id="{{ $item->id }}"
+                            data-category="{{ $item->category_id }}"
+                            data-label="{{ $item->description }}">
+                        <span>
+                            <span class="pi-name">{{ $item->description }}</span>
+                            <span class="pi-cat">{{ $item->category->name ?? '—' }}</span>
+                        </span>
+                        <span class="pi-stock">{{ $item->balance_per_card }} {{ $item->unit }}</span>
+                    </button>
+                    @endforeach
+                </div>
+                <div id="pickerEmpty" class="text-muted small text-center py-3 d-none">No matching items.</div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
+(function () {
+    const picker = new bootstrap.Modal(document.getElementById('itemPicker'));
+    const search = document.getElementById('pickerSearch');
+    const catFilter = document.getElementById('pickerCategory');
+    const emptyMsg = document.getElementById('pickerEmpty');
+    let activeRow = null;
     let rowIndex = 1;
-    const itemOptions = `@foreach($items as $item)<option value="{{ $item->id }}">{{ $item->description }} — {{ $item->balance_per_card }} {{ $item->unit }} available</option>@endforeach`;
+
+    const rowTemplate = (i) => `
+        <div class="col-12 col-sm-8 mb-1 mb-sm-0">
+            <input type="hidden" name="items[${i}][supply_item_id]" class="item-id">
+            <button type="button" class="btn btn-outline-secondary w-100 text-start pick-item text-truncate">Choose an item…</button>
+        </div>
+        <div class="col-9 col-sm-3">
+            <input type="number" name="items[${i}][quantity]" inputmode="numeric" class="form-control" min="1" placeholder="Qty" required>
+        </div>
+        <div class="col-3 col-sm-1 px-sm-0">
+            <button type="button" class="btn btn-outline-danger w-100 remove-row">×</button>
+        </div>`;
 
     document.getElementById('addRow').addEventListener('click', function () {
         const row = document.createElement('div');
-        row.className = 'row g-2 mb-2 item-row';
-        row.innerHTML = `
-            <div class="col-8">
-                <select name="items[${rowIndex}][supply_item_id]" class="form-select" required>
-                    <option value="">Select item</option>${itemOptions}
-                </select>
-            </div>
-            <div class="col-3">
-                <input type="number" name="items[${rowIndex}][quantity]" class="form-control" min="1" placeholder="Qty" required>
-            </div>
-            <div class="col-1 px-0">
-                <button type="button" class="btn btn-outline-danger w-100 remove-row">×</button>
-            </div>`;
+        row.className = 'row g-2 mb-3 item-row';
+        row.innerHTML = rowTemplate(rowIndex++);
         document.getElementById('itemRows').appendChild(row);
-        rowIndex++;
     });
 
     document.getElementById('itemRows').addEventListener('click', function (e) {
+        if (e.target.classList.contains('pick-item')) {
+            activeRow = e.target.closest('.item-row');
+            search.value = '';
+            catFilter.value = '';
+            applyFilter();
+            picker.show();
+        }
         if (e.target.classList.contains('remove-row')) {
             const rows = document.querySelectorAll('.item-row');
             if (rows.length > 1) e.target.closest('.item-row').remove();
         }
     });
+
+    document.getElementById('pickerList').addEventListener('click', function (e) {
+        const btn = e.target.closest('.picker-item');
+        if (!btn || !activeRow) return;
+        activeRow.querySelector('.item-id').value = btn.dataset.id;
+        activeRow.querySelector('.pick-item').textContent = btn.dataset.label;
+        picker.hide();
+    });
+
+    function applyFilter() {
+        const term = search.value.toLowerCase();
+        const cat = catFilter.value;
+        let visible = 0;
+        document.querySelectorAll('.picker-item').forEach(function (el) {
+            const matchesText = el.dataset.label.toLowerCase().includes(term);
+            const matchesCat = !cat || el.dataset.category === cat;
+            const show = matchesText && matchesCat;
+            el.classList.toggle('d-none', !show);
+            if (show) visible++;
+        });
+        emptyMsg.classList.toggle('d-none', visible > 0);
+    }
+
+    search.addEventListener('input', applyFilter);
+    catFilter.addEventListener('change', applyFilter);
+
+    document.getElementById('requestForm').addEventListener('submit', function (e) {
+        const missing = [...document.querySelectorAll('.item-id')].some(i => !i.value);
+        if (missing) {
+            e.preventDefault();
+            alert('Please choose an item for each row.');
+        }
+    });
+})();
 </script>
 @endpush
