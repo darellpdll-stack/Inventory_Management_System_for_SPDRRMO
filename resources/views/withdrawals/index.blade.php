@@ -41,6 +41,7 @@
                     <th>Date Withdrawn</th>
                     <th>Date Returned</th>
                     <th>Remark</th>
+                    <th>Print</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,10 +81,18 @@
                                 <span class="text-muted">"</span>
                             @endif
                         </td>
+                        <td>
+                            @if($i === 0)
+                                <a href="{{ route('withdrawals.receipt', $w) }}" target="_blank"
+                                   class="btn btn-sm btn-outline-primary" title="Print receipt">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                 @empty
-                    <tr><td colspan="7" class="text-center text-muted py-3">No withdrawals recorded yet.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-3">No withdrawals recorded yet.</td></tr>
                 @endforelse
             </tbody>
         </table>

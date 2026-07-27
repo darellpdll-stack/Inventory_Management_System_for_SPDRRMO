@@ -100,4 +100,10 @@ class WithdrawalController extends Controller
         $withdrawal->load('items.supplyItem.category', 'recordedBy');
         return view('withdrawals.show', compact('withdrawal'));
     }
+
+    public function receipt(Withdrawal $withdrawal)
+    {
+        $withdrawal->load('items.supplyItem', 'recordedBy');
+        return view('withdrawals.receipt', compact('withdrawal'));
+    }
 }

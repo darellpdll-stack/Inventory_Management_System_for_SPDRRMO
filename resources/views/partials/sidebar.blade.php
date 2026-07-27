@@ -17,36 +17,47 @@
             <a href="{{ route('supplies.index') }}" class="nav-link {{ request()->routeIs('supplies.*') ? 'active' : '' }}">
                 <i class="bi bi-box-seam"></i> Supplies
             </a>
+        </li>
         <li class="nav-item">
-            <li class="nav-item">
-    <a href="{{ route('property.index') }}" class="nav-link {{ request()->routeIs('property.*') ? 'active' : '' }}">
+            <a href="{{ route('property.index') }}" class="nav-link {{ request()->routeIs('property.*') ? 'active' : '' }}">
                 <i class="bi bi-hdd-stack"></i> Property
             </a>
         </li>
-        <a href="{{ route('withdrawals.index') }}" class="nav-link {{ request()->routeIs('withdrawals.*') ? 'active' : '' }}">
-        <i class="bi bi-box-arrow-up"></i> Withdrawals
-        </a>
+        <li class="nav-item">
+            <a href="{{ route('withdrawals.index') }}" class="nav-link {{ request()->routeIs('withdrawals.*') ? 'active' : '' }}">
+                <i class="bi bi-box-arrow-up"></i> Withdrawals
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
+                <i class="bi bi-people"></i> Personnel
+            </a>
+        </li>
+
+        @if(Auth::user()->role === 'admin')
+        <li class="nav-item">
+            <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                <i class="bi bi-person-lock"></i> Manage Users
+            </a>
         </li>
         
-        </li>
-            <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
-    <i class="bi bi-people"></i> Personnel
-</a>
-        @if(Auth::user()->role === 'admin')
-        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-    <i class="bi bi-person-lock"></i> Manage Users
-        </a>
-
         <li class="nav-item">
-    <a href="{{ route('requests.index') }}" class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}">
-        <i class="bi bi-inbox"></i> Requests
-        @if(($pendingRequestCount ?? 0) > 0)
-            <span class="nav-badge">{{ $pendingRequestCount }}</span>
-        @endif
-    </a>
-</li>
+            <a href="{{ route('settings.edit') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                <i class="bi bi-gear"></i> Report Settings
+            </a>
+        </li>
 
-
+        {{-- Requests hidden — client opted for direct withdrawals instead of the request/approval flow.
+             Routes and controller remain in place if the feature is revived.
+        <li class="nav-item">
+            <a href="{{ route('requests.index') }}" class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}">
+                <i class="bi bi-inbox"></i> Requests
+                @if(($pendingRequestCount ?? 0) > 0)
+                    <span class="nav-badge">{{ $pendingRequestCount }}</span>
+                @endif
+            </a>
+        </li>
+        --}}
         @endif
     </ul>
 

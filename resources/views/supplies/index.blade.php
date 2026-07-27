@@ -4,7 +4,10 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold mb-0">Supply Items</h4>
-    <a href="{{ route('supplies.create') }}" class="btn btn-primary">+ Add Item</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('supplies.report.options') }}" class="btn btn-outline-primary">Generate Report</a>
+        <a href="{{ route('supplies.create') }}" class="btn btn-primary">+ Add Item</a>
+    </div>
 </div>
 
 <form method="GET" class="row g-2 mb-3">

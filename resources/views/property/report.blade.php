@@ -56,14 +56,14 @@
 
     <table>
         <colgroup>
-        <col style="width:18%">  {{-- Accountable Person --}}
-        <col style="width:30%">  {{-- Description --}}
-        <col style="width:14%">  {{-- Property No. --}}
-        <col style="width:8%">   {{-- Unit of Measure --}}
-        <col style="width:10%">  {{-- Unit Value --}}
-        <col style="width:8%">   {{-- On Hand --}}
-        <col style="width:12%">  {{-- Remarks --}}
-    </colgroup>
+            <col style="width:18%">
+            <col style="width:30%">
+            <col style="width:14%">
+            <col style="width:8%">
+            <col style="width:10%">
+            <col style="width:8%">
+            <col style="width:12%">
+        </colgroup>
         <thead>
             <tr>
                 <th>ACCOUNTABLE PERSON</th>
@@ -94,31 +94,31 @@
         </tr>
         @endforeach
     @empty
-        <tr><td colspan="8" class="center">No items in this category.</td></tr>
+        <tr><td colspan="7" class="center">No items in this category.</td></tr>
     @endforelse
     <tr class="grand">
-    <td>GRAND TOTAL</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td class="num">₱{{ number_format($grandTotal, 2) }}</td>
-    <td></td>
-    <td></td>
-</tr>
+        <td>GRAND TOTAL</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td class="num">₱{{ number_format($grandTotal, 2) }}</td>
+        <td></td>
+        <td></td>
+    </tr>
 </tbody>
     </table>
 
     <div class="signatures">
-    <div class="sig-block">
-        <div class="sig-label">Prepared by:</div>
-        <div class="sig-name-wrap"><span class="sig-name">CECILIA V. HAINTO</span></div>
-        <div class="sig-title">Supervising Administrative Officer</div>
+        <div class="sig-block">
+            <div class="sig-label">Prepared by:</div>
+            <div class="sig-name-wrap"><span class="sig-name">{{ \App\Models\Setting::get('property_prepared_name', 'CECILIA V. HAINTO') }}</span></div>
+            <div class="sig-title">{{ \App\Models\Setting::get('property_prepared_title', 'Supervising Administrative Officer') }}</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-label">Approved by:</div>
+            <div class="sig-name-wrap"><span class="sig-name">{{ \App\Models\Setting::get('property_approved_name', 'RADEN D. DIMAANO, C.E.') }}</span></div>
+            <div class="sig-title">{{ \App\Models\Setting::get('property_approved_title', 'PGDH-PDRRMO') }}</div>
+        </div>
     </div>
-    <div class="sig-block">
-        <div class="sig-label">Approved by:</div>
-        <div class="sig-name-wrap"><span class="sig-name">RADEN D. DIMAANO, C.E.</span></div>
-        <div class="sig-title">PGDH-PDRRMO</div>
-    </div>
-</div>
 </body>
 </html>

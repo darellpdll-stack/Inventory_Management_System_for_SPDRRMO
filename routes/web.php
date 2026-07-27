@@ -8,6 +8,7 @@ use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyItemController;
 use App\Http\Controllers\SupplyRequestController;
+use App\Http\Controllers\SettingController;
 
 Route::get('/', fn () => redirect()->route('login'));
 
@@ -38,14 +39,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/supplies/create', [SupplyItemController::class, 'create'])->name('supplies.create');
     Route::post('/supplies', [SupplyItemController::class, 'store'])->name('supplies.store');
     Route::get('/supplies/category/{category}', [SupplyItemController::class, 'category'])->name('supplies.category');
+    Route::get('/supplies/report/options', [SupplyItemController::class, 'reportOptions'])->name('supplies.report.options');
+    Route::get('/supplies/report/generate', [SupplyItemController::class, 'report'])->name('supplies.report');
     Route::get('/supplies/{supply}/edit', [SupplyItemController::class, 'edit'])->name('supplies.edit');
     Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
     Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
-
+    //Receipt
+    Route::get('/withdrawals/{withdrawal}/receipt', [WithdrawalController::class, 'receipt'])->name('withdrawals.receipt');
     // Withdrawals
     Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
     Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
     Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+    Route::get('/withdrawals/{withdrawal}/receipt', [WithdrawalController::class, 'receipt'])->name('withdrawals.receipt');
     Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'show'])->name('withdrawals.show');
 
     // Personnel — all logged-in users can view and add
@@ -73,6 +78,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/property/{property}', [PropertyItemController::class, 'update'])->name('property.update');
         Route::delete('/property/{property}', [PropertyItemController::class, 'destroy'])->name('property.destroy');
 
+
+        Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         // Supply requests (admin review)
         Route::get('/requests', [SupplyRequestController::class, 'index'])->name('requests.index');
         Route::get('/requests/qr', [SupplyRequestController::class, 'qrCode'])->name('requests.qr');

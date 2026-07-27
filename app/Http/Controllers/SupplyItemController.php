@@ -107,6 +107,26 @@ class SupplyItemController extends Controller
 
         return redirect()->route('supplies.index')->with('success', 'Supply item updated.');
     }
+    public function reportOptions()
+    {
+        $categories = SupplyCategory::orderBy('name')->get();
+        return view('supplies.report-options', compact('categories'));
+    }
+
+    public function report(Request $request)
+    {
+        $request->validate([
+            'category_id' => 'required|exists:supply_categories,id',
+        ]);
+
+        $category = SupplyCategory::findOrFail($request->category_id);
+
+        $items = SupplyItem::where('category_id', $category->id)
+            ->orderBy('description')
+            ->get();
+
+        return view('supplies.report', compact('category', 'items'));
+    }
 
     public function destroy(SupplyItem $supply)
 {

@@ -52,7 +52,7 @@
                             @error('unit_value') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Balance Per Card (Qty)</label>
+                            <label class="form-label">Balance Per Card (Quantity)</label>
                             <input type="number" name="balance_per_card" value="{{ old('balance_per_card', $supply->balance_per_card) }}"
                                    class="form-control @error('balance_per_card') is-invalid @enderror" min="0" required>
                             @error('balance_per_card') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -60,11 +60,14 @@
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">On Hand Per Count</label>
+                            <label class="form-label">On Hand Per Count (Quantity)</label>
                             <input type="number" name="on_hand_per_count" value="{{ old('on_hand_per_count', $supply->on_hand_per_count) }}"
-                                   class="form-control @error('on_hand_per_count') is-invalid @enderror" min="0">
+                                   class="form-control @error('on_hand_per_count') is-invalid @enderror" min="0" required>
                             @error('on_hand_per_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+                        <div class="form-text mb-3" style="margin-top:-8px;">
+                        Balance Per Card is the recorded stock; On Hand Per Count is the actual physical count. They're normally equal — a difference shows as a shortage or overage on the report.
+                    </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">
                                 Minimum Stock

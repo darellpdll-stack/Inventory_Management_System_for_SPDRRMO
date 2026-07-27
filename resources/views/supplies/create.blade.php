@@ -40,24 +40,35 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Unit of Measure</label>
                             <input type="text" name="unit" value="{{ old('unit', 'pc') }}"
                                    class="form-control @error('unit') is-invalid @enderror" required>
                             @error('unit') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Unit Value (₱)</label>
                             <input type="number" step="0.01" name="unit_value" value="{{ old('unit_value', 0) }}"
                                    class="form-control @error('unit_value') is-invalid @enderror" min="0" required>
                             @error('unit_value') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Balance Per Card (Qty)</label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Balance Per Card (Quantity)</label>
                             <input type="number" name="balance_per_card" value="{{ old('balance_per_card', 0) }}"
                                    class="form-control @error('balance_per_card') is-invalid @enderror" min="0" required>
                             @error('balance_per_card') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">On Hand Per Count (Quantity)</label>
+                            <input type="number" name="on_hand_per_count" value="{{ old('on_hand_per_count', 0) }}"
+                                   class="form-control @error('on_hand_per_count') is-invalid @enderror" min="0" required>
+                            @error('on_hand_per_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                    <div class="form-text mb-3" style="margin-top:-8px;">
+                        Balance Per Card is the recorded stock; On Hand Per Count is the actual physical count. They're normally equal — a difference shows as a shortage or overage on the report.
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
