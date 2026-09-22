@@ -12,10 +12,10 @@ use App\Http\Controllers\SettingController;
 
 Route::get('/', fn () => redirect()->route('login'));
 
-// Public supply request (QR code destination) — no login required
-Route::get('/qr_code/request', [SupplyRequestController::class, 'create'])->name('requests.create');
-Route::post('/qr_code/request', [SupplyRequestController::class, 'store'])->name('requests.store');
-Route::get('/qr_code/submitted', [SupplyRequestController::class, 'submitted'])->name('requests.submitted');
+// Public supply request (QR code destination) — disabled for now, not in use
+// Route::get('/qr_code/request', [SupplyRequestController::class, 'create'])->name('requests.create');
+// Route::post('/qr_code/request', [SupplyRequestController::class, 'store'])->name('requests.store');
+// Route::get('/qr_code/submitted', [SupplyRequestController::class, 'submitted'])->name('requests.submitted');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -44,12 +44,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/supplies/{supply}/edit', [SupplyItemController::class, 'edit'])->name('supplies.edit');
     Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
     Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
-    //Receipt
-    Route::get('/withdrawals/{withdrawal}/receipt', [WithdrawalController::class, 'receipt'])->name('withdrawals.receipt');
+
+    // Supply requests — any logged-in user can view and add
+    Route::get('/requests', [SupplyRequestController::class, 'index'])->name('requests.index');
+    Route::get('/requests/create', [SupplyRequestController::class, 'create'])->name('requests.create');
+    Route::post('/requests', [SupplyRequestController::class, 'store'])->name('requests.store');
+    Route::get('/requests/{supplyRequest}', [SupplyRequestController::class, 'show'])
+        ->whereNumber('supplyRequest')
+        ->name('requests.show');
+
     // Withdrawals
     Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
-    Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
-    Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+    // Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
+    // Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
     Route::get('/withdrawals/{withdrawal}/receipt', [WithdrawalController::class, 'receipt'])->name('withdrawals.receipt');
     Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'show'])->name('withdrawals.show');
 
@@ -66,6 +73,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/property/report/options', [PropertyItemController::class, 'reportOptions'])->name('property.report.options');
     Route::get('/property/report/generate', [PropertyItemController::class, 'report'])->name('property.report');
 
+    // Reports hub
+    Route::view('/reports', 'reports.index')->name('reports.index');
+
     // Admin-only routes
     Route::middleware('admin')->group(function () {
         // Personnel edit/delete
@@ -78,11 +88,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/property/{property}', [PropertyItemController::class, 'update'])->name('property.update');
         Route::delete('/property/{property}', [PropertyItemController::class, 'destroy'])->name('property.destroy');
 
-
+        // Report settings
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
-        // Supply requests (admin review)
-        Route::get('/requests', [SupplyRequestController::class, 'index'])->name('requests.index');
+
+        // Supply requests — approving and declining stay admin-only
         Route::get('/requests/qr', [SupplyRequestController::class, 'qrCode'])->name('requests.qr');
         Route::post('/requests/{supplyRequest}/approve', [SupplyRequestController::class, 'approve'])->name('requests.approve');
         Route::post('/requests/{supplyRequest}/decline', [SupplyRequestController::class, 'decline'])->name('requests.decline');

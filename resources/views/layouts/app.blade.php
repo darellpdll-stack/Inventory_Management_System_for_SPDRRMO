@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+    (function () {
+        try {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        } catch (e) {}
+    })();
+</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Inventory Management System for SPDRRMO')</title>
@@ -9,9 +17,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app.css') }}?v=7" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
 </head>
 <body>
     @auth
@@ -72,6 +81,21 @@
             new bootstrap.Tooltip(el);
         });
     </script>
+    <script>
+    (function () {
+        const root = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        if (!toggle) return;
+
+        toggle.checked = root.getAttribute('data-bs-theme') === 'dark';
+
+        toggle.addEventListener('change', function () {
+            const next = toggle.checked ? 'dark' : 'light';
+            root.setAttribute('data-bs-theme', next);
+            try { localStorage.setItem('theme', next); } catch (e) {}
+        });
+    })();
+</script>
     @stack('scripts')
 </body>
 </html>

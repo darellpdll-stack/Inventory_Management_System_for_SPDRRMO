@@ -12,11 +12,11 @@ use Illuminate\Validation\ValidationException;
 
 class WithdrawalController extends Controller
 {
-    public function index(Request $request)
+        public function index(Request $request)
     {
         $categories = SupplyCategory::all();
 
-        $query = Withdrawal::with('items.supplyItem.category', 'recordedBy');
+        $query = Withdrawal::with('items.supplyItem.category', 'recordedBy', 'supplyRequest');
 
         // filter by item category
         if ($request->filled('category')) {
@@ -26,18 +26,26 @@ class WithdrawalController extends Controller
             });
         }
 
-        // search by person or item
+        // search by person, item, or request number
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('withdrawn_by', 'ilike', '%' . $search . '%')
                   ->orWhereHas('items.supplyItem', function ($q2) use ($search) {
                       $q2->where('description', 'ilike', '%' . $search . '%');
                   });
+
+                // "REQ-2026-0004" finds the withdrawal that came from request #4
+                if (preg_match('/^REQ-\d{4}-(\d+)$/i', $search, $m)) {
+                    $q->orWhereHas('supplyRequest', fn ($r) => $r->where('id', (int) $m[1]));
+                }
             });
         }
 
-        $withdrawals = $query->orderByDesc('date_withdrawn')->paginate(10)->withQueryString();
+        $withdrawals = $query->orderByDesc('date_withdrawn')
+            ->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('withdrawals.index', compact('withdrawals', 'categories'));
     }

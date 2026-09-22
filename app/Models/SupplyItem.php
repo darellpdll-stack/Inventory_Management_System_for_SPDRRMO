@@ -46,6 +46,24 @@ class SupplyItem extends Model
         return 'safe';
     }
 
+        // available / low / out — for every item
+    public function stockStatus(): string
+    {
+        if ($this->balance_per_card <= 0) {
+            return 'out';
+        }
+        if ($this->isLowStock()) {
+            return 'low';
+        }
+        return 'available';
+    }
+
+    // only Medical items track expiry
+    public function isMedical(): bool
+    {
+        return optional($this->category)->name === 'Medical';
+    }
+
     // shortage/overage calculated, not stored
     public function shortageQty(): ?int
     {
@@ -62,5 +80,16 @@ class SupplyItem extends Model
     public function withdrawalItems()
     {
         return $this->hasMany(WithdrawalItem::class, 'supply_item_id');
+    }
+        // every request line that asked for this item
+    public function requestLines()
+    {
+        return $this->hasMany(\App\Models\SupplyRequestItem::class, 'supply_item_id');
+    }
+
+    // only the most recent one
+    public function latestRequestLine()
+    {
+        return $this->hasOne(\App\Models\SupplyRequestItem::class, 'supply_item_id')->latestOfMany();
     }
 }

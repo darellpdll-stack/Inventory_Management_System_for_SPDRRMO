@@ -24,4 +24,10 @@ class Withdrawal extends Model
     {
         return $this->belongsTo(User::class, 'recorded_by');
     }
+
+        // the approved request this withdrawal came from (null for old direct withdrawals)
+    public function supplyRequest()
+    {
+        return $this->hasOne(\App\Models\SupplyRequest::class, 'withdrawal_id');
+    }
 }

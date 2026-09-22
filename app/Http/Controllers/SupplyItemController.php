@@ -13,18 +13,18 @@ class SupplyItemController extends Controller
     public function index(Request $request)
     {
         $categories = SupplyCategory::all();
-        $query = SupplyItem::with('category');
+        $query = SupplyItem::with(['category', 'latestRequestLine.request.personnel']);
 
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
 
-            if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('description', 'ilike', '%' . $search . '%')
-            ->orWhere('product_code', 'ilike', '%' . $search . '%');
-        });
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'ilike', '%' . $search . '%')
+                  ->orWhere('product_code', 'ilike', '%' . $search . '%');
+            });
         }
 
         $items = $query->orderBy('description')->paginate(10)->withQueryString();
@@ -36,13 +36,14 @@ class SupplyItemController extends Controller
     {
         $categories = SupplyCategory::all();
 
-        $query = SupplyItem::with('category')->where('category_id', $category->id);
+        $query = SupplyItem::with(['category', 'latestRequestLine.request.personnel'])
+            ->where('category_id', $category->id);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'ilike', '%' . $search . '%')
-                ->orWhere('product_code', 'ilike', '%' . $search . '%');
+                  ->orWhere('product_code', 'ilike', '%' . $search . '%');
             });
         }
 
@@ -61,7 +62,6 @@ class SupplyItemController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            
             'category_id' => 'required|exists:supply_categories,id',
             'product_code' => 'required|string|max:100',
             'stock_no' => 'nullable|string|max:100',
@@ -69,6 +69,7 @@ class SupplyItemController extends Controller
             'unit' => 'required|string|max:50',
             'unit_value' => 'required|numeric|min:0',
             'balance_per_card' => 'required|integer|min:0',
+            'on_hand_per_count' => 'required|integer|min:0',
             'minimum_stock' => 'nullable|integer|min:0',
             'expiration_date' => 'nullable|date',
             'remarks' => 'nullable|string|max:255',
@@ -97,7 +98,7 @@ class SupplyItemController extends Controller
             'unit' => 'required|string|max:50',
             'unit_value' => 'required|numeric|min:0',
             'balance_per_card' => 'required|integer|min:0',
-            'on_hand_per_count' => 'nullable|integer|min:0',
+            'on_hand_per_count' => 'required|integer|min:0',
             'minimum_stock' => 'required|integer|min:0',
             'expiration_date' => 'nullable|date',
             'remarks' => 'nullable|string|max:255',
@@ -107,6 +108,7 @@ class SupplyItemController extends Controller
 
         return redirect()->route('supplies.index')->with('success', 'Supply item updated.');
     }
+
     public function reportOptions()
     {
         $categories = SupplyCategory::orderBy('name')->get();
@@ -129,15 +131,22 @@ class SupplyItemController extends Controller
     }
 
     public function destroy(SupplyItem $supply)
-{
-    // don't allow deleting an item that has withdrawal history
-    if ($supply->withdrawalItems()->exists()) {
-        return back()->with('error', "Can't delete \"{$supply->description}\" — it has withdrawal records. Deleting it would break the withdrawal history.");
+    {
+        // don't allow deleting an item that has withdrawal history
+        if ($supply->withdrawalItems()->exists()) {
+            return back()->with('error', "Can't delete \"{$supply->description}\" — it has withdrawal records. Deleting it would break the withdrawal history.");
+        }
+
+        if ($supply->requestLines()->exists()) {
+            return back()->with('error', 'This item appears in a supply request and can\'t be deleted.');
+        }
+
+        // or one that appears in a supply request
+        if ($supply->requestLines()->exists()) {
+            return back()->with('error', "Can't delete \"{$supply->description}\" — it appears in a supply request.");
+        }
+
+        $supply->delete();
+        return back()->with('success', 'Supply item deleted.');
     }
-
-    $supply->delete();
-    return back()->with('success', 'Supply item deleted.');
-}
-
-    
 }

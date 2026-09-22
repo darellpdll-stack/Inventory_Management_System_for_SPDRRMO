@@ -1,95 +1,73 @@
 @extends('layouts.app')
-@section('title', 'Supply Requests')
+@section('title', 'Requests')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0">Supply Requests</h4>
-    <div class="d-flex align-items-center gap-2">
-        <a href="{{ route('requests.qr') }}" class="btn btn-sm btn-outline-primary" target="_blank">QR Code</a>
-        <form method="GET">
-            <select name="status" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
-                <option value="pending"  {{ $status === 'pending'  ? 'selected' : '' }}>Pending</option>
-                <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="declined" {{ $status === 'declined' ? 'selected' : '' }}>Declined</option>
-                <option value="all"      {{ $status === 'all'      ? 'selected' : '' }}>All</option>
-            </select>
-        </form>
+<div class="page-head">
+    <div>
+        <div class="page-title">Supply Requests</div>
+        <div class="page-sub">Encode, review, and approve supply requests.</div>
     </div>
+    <a href="{{ route('requests.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Request</a>
 </div>
 
-@forelse($requests as $req)
-<div class="card shadow-sm mb-3">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-                <span class="fw-bold">{{ $req->personnel->name ?? '—' }}</span>
-                <span class="text-muted small ms-2">{{ $req->created_at->format('M d, Y g:i A') }}</span>
-            </div>
-            <div>
-                @if($req->status === 'pending')
-                    <span class="badge bg-warning text-dark">Pending</span>
-                @elseif($req->status === 'approved')
-                    <span class="badge bg-success">Approved</span>
-                @else
-                    <span class="badge" style="background: var(--danger);">Declined</span>
-                @endif
-            </div>
+<div class="card shadow-sm">
+    <form method="GET" class="list-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                   placeholder="Search request number or name…">
         </div>
+        <select name="status" class="form-select" style="width:auto;" onchange="this.form.submit()">
+            <option value="all"      {{ $status === 'all'      ? 'selected' : '' }}>All statuses</option>
+            <option value="pending"  {{ $status === 'pending'  ? 'selected' : '' }}>Pending</option>
+            <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Approved</option>
+            <option value="declined" {{ $status === 'declined' ? 'selected' : '' }}>Declined</option>
+        </select>
+    </form>
 
-        @if($req->purpose)
-            <div class="small text-muted mb-2">Purpose: {{ $req->purpose }}</div>
-        @endif
-
-        <table class="table table-sm align-middle mb-2">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Item</th>
-                    <th class="text-center">Requested</th>
-                    <th class="text-center">In Stock</th>
+                    <th>Request No.</th>
+                    <th>Requester</th>
+                    <th>Items</th>
+                    <th>Status</th>
+                    <th>Date Requested</th>
+                    <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($req->items as $line)
-                <tr>
-                    <td>{{ $line->supplyItem->description ?? '—' }}</td>
-                    <td class="text-center">{{ $line->quantity }} {{ $line->supplyItem->unit ?? '' }}</td>
-                    <td class="text-center">
-                        @php $stock = $line->supplyItem->balance_per_card ?? 0; @endphp
-                        <span class="{{ $stock < $line->quantity ? 'text-danger fw-bold' : 'text-muted' }}">{{ $stock }}</span>
-                    </td>
-                </tr>
-                @endforeach
+                @forelse($requests as $req)
+                    @php $first = $req->items->first(); @endphp
+                    <tr>
+                        <td><a href="{{ route('requests.show', $req) }}" class="req-no">{{ $req->requestNo() }}</a></td>
+                        <td class="cell-main">{{ $req->personnel->name ?? '—' }}</td>
+                        <td>
+                            <div class="cell-main">{{ $first->supplyItem->description ?? '—' }}</div>
+                            <div class="cell-sub">
+                                @if($req->items->count() > 1)
+                                    +{{ $req->items->count() - 1 }} more {{ Str::plural('item', $req->items->count() - 1) }}
+                                @else
+                                    {{ $first->quantity ?? '' }} {{ $first->supplyItem->unit ?? '' }}
+                                @endif
+                            </div>
+                        </td>
+                        <td><span class="req-badge req-{{ $req->status }}">{{ ucfirst($req->status) }}</span></td>
+                        <td class="cell-main">{{ ($req->request_date ?? $req->created_at)->format('M d, Y') }}</td>
+                        <td class="text-end">
+                            <a href="{{ route('requests.show', $req) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="dash-empty">No requests found.</td></tr>
+                @endforelse
             </tbody>
         </table>
-
-        @if($req->status === 'pending')
-            <div class="d-flex gap-2">
-                <form method="POST" action="{{ route('requests.approve', $req) }}"
-                      onsubmit="return confirm('Approve this request? Stock will be deducted.');">
-                    @csrf
-                    <button class="btn btn-sm btn-primary">Approve</button>
-                </form>
-                <form method="POST" action="{{ route('requests.decline', $req) }}" class="d-flex gap-2">
-                    @csrf
-                    <input type="text" name="decline_reason" class="form-control form-control-sm"
-                           placeholder="Reason (optional)" style="width:220px;">
-                    <button class="btn btn-sm btn-outline-danger">Decline</button>
-                </form>
-            </div>
-        @else
-            <div class="small text-muted">
-                {{ ucfirst($req->status) }} by {{ $req->reviewedBy->name ?? '—' }}
-                on {{ $req->reviewed_at?->format('M d, Y g:i A') }}
-                @if($req->decline_reason) — {{ $req->decline_reason }} @endif
-            </div>
-        @endif
     </div>
 </div>
-@empty
-<div class="card shadow-sm">
-    <div class="card-body text-center text-muted py-4">No {{ $status === 'all' ? '' : $status }} requests.</div>
-</div>
-@endforelse
 
 <div class="mt-3">{{ $requests->links() }}</div>
 @endsection

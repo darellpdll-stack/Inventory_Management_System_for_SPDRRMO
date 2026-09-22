@@ -3,33 +3,59 @@
 namespace App\Http\Controllers;
 
 use App\Models\Personnel;
+use App\Models\SupplyCategory;
 use App\Models\SupplyItem;
 use App\Models\SupplyRequest;
 use App\Models\SupplyRequestItem;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Withdrawal;
 use App\Models\WithdrawalItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SupplyRequestController extends Controller
 {
-    // public page — no login required
-   public function create()
+    public function index(Request $request)
+    {
+        $status = $request->get('status', 'all');
+
+        $requests = SupplyRequest::with(['personnel', 'items.supplyItem'])
+            ->when($status !== 'all', fn ($q) => $q->where('status', $status))
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $term = trim($request->search);
+                $q->where(function ($q) use ($term) {
+                    $q->whereHas('personnel', fn ($p) => $p->where('name', 'ilike', "%{$term}%"));
+                    // "REQ-2026-0003" or "3" both find request #3
+                    if (preg_match('/(\d+)$/', $term, $m)) {
+                        $q->orWhere('id', (int) $m[1]);
+                    }
+                });
+            })
+            ->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        $pendingCount = SupplyRequest::where('status', 'pending')->count();
+
+        return view('requests.index', compact('requests', 'status', 'pendingCount'));
+    }
+
+    public function create()
     {
         $personnel = Personnel::orderBy('name')->get();
         $items = SupplyItem::with('category')
             ->where('balance_per_card', '>', 0)
             ->orderBy('description')
             ->get();
-        $categories = \App\Models\SupplyCategory::orderBy('name')->get();
+        $categories = SupplyCategory::orderBy('name')->get();
 
         return view('requests.create', compact('personnel', 'items', 'categories'));
     }
-    
+
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'request_date' => 'required|date|before_or_equal:today',
             'personnel_id' => 'required|exists:personnel,id',
             'purpose' => 'nullable|string|max:255',
             'items' => 'required|array|min:1',
@@ -37,9 +63,10 @@ class SupplyRequestController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $supplyRequest = DB::transaction(function () use ($validated) {
             $supplyRequest = SupplyRequest::create([
                 'personnel_id' => $validated['personnel_id'],
+                'request_date' => $validated['request_date'],
                 'purpose' => $validated['purpose'] ?? null,
                 'status' => 'pending',
             ]);
@@ -51,32 +78,18 @@ class SupplyRequestController extends Controller
                     'quantity' => $line['quantity'],
                 ]);
             }
+
+            return $supplyRequest;
         });
 
-        return redirect()->route('requests.submitted');
+        return redirect()->route('requests.show', $supplyRequest)
+            ->with('success', 'Request ' . $supplyRequest->requestNo() . ' added.');
     }
 
-    // admin — list requests
-    public function index(Request $request)
+    public function show(SupplyRequest $supplyRequest)
     {
-        $status = $request->get('status', 'pending');
-
-        $requests = SupplyRequest::with(['personnel', 'items.supplyItem', 'reviewedBy'])
-            ->when($status !== 'all', fn ($q) => $q->where('status', $status))
-            ->orderByDesc('created_at')
-            ->paginate(15)
-            ->withQueryString();
-
-        $pendingCount = SupplyRequest::where('status', 'pending')->count();
-
-        return view('requests.index', compact('requests', 'status', 'pendingCount'));
-    }
-
-    // admin — the printable QR poster
-    public function qrCode()
-    {
-        $url = route('requests.create');
-        return view('requests.qr', compact('url'));
+        $supplyRequest->load(['personnel', 'items.supplyItem.category', 'reviewedBy', 'withdrawal']);
+        return view('requests.show', compact('supplyRequest'));
     }
 
     // admin — approve: converts the request into a withdrawal
@@ -146,6 +159,13 @@ class SupplyRequestController extends Controller
         ]);
 
         return back()->with('success', 'Request declined.');
+    }
+
+    // admin — QR poster (dormant, kept for later)
+    public function qrCode()
+    {
+        $url = url('/qr_code/request');
+        return view('requests.qr', compact('url'));
     }
 
     public function submitted()

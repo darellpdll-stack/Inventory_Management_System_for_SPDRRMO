@@ -32,49 +32,62 @@
         <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
                 <tr>
+                    <th>Code</th>
                     <th>Description</th>
-                    <th>Product Code</th>
                     <th>Category</th>
-                    <th>Unit</th>
-                    <th class="text-center">Balance</th>
-                    <th>Expiry</th>
+                    <th class="text-center">Quantity</th>
                     <th>Status</th>
+                    <th>Expiry</th>
+                    <th>Updated</th>
+                    <th class="text-nowrap">Last Requested</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($items as $item)
                 <tr>
-                    <td>{{ $item->description }}</td>
                     <td><span class="text-muted small">{{ $item->product_code }}</span></td>
+                    <td>{{ $item->description }}</td>
                     <td>{{ $item->category->name ?? '—' }}</td>
-                    <td>{{ $item->unit }}</td>
-                    <td class="text-center">
-                        {{ $item->balance_per_card }}
-                        @if($item->isLowStock())
-                            <span class="badge bg-danger ms-1">Low</span>
-                        @endif
+                    <td class="text-center text-nowrap">{{ $item->balance_per_card }} {{ $item->unit }}</td>
+
+                    <td class="text-nowrap">
+                        @switch($item->stockStatus())
+                            @case('out')
+                                <span class="badge" style="background: var(--danger);">Out of stock</span>
+                                @break
+                            @case('low')
+                                <span class="badge bg-warning text-dark">Low</span>
+                                @break
+                            @default
+                                <span class="badge bg-success">Available</span>
+                        @endswitch
                     </td>
-                    @php $exp = $item->expiryStatus(); @endphp
-                    <td>
-                        @if($item->expiration_date)
-                            {{ $item->expiration_date->format('M d, Y') }}
+
+                    <td class="text-nowrap">
+                        @if($item->isMedical() && $item->expiration_date)
+                            @php $exp = $item->expiryStatus(); @endphp
+                            <div class="small">{{ $item->expiration_date->format('M d, Y') }}</div>
+                            @if($exp === 'expired')
+                                <span class="badge bg-dark">Expired</span>
+                            @elseif($exp === 'expiring')
+                                <span class="badge bg-warning text-dark">Expiring soon</span>
+                            @else
+                                <span class="badge bg-success">Safe</span>
+                            @endif
                         @else
                             <span class="text-muted">—</span>
                         @endif
                     </td>
-                    <td>
-                        @if($exp === 'none')
-                            <span class="text-muted">—</span>
-                        @elseif($exp === 'expired')
-                            <span class="badge bg-dark">Expired</span>
-                        @elseif($exp === 'expiring')
-                            <span class="badge bg-warning text-dark">Expiring Soon</span>
-                        @else
-                            <span class="badge bg-success">Safe</span>
-                        @endif
+
+                    <td class="text-nowrap"><span class="small text-muted">{{ $item->updated_at?->format('M d, Y') }}</span></td>
+
+                    <td class="text-nowrap">
+                        @php $lastReq = $item->latestRequestLine?->request; @endphp
+                        <span class="small">{{ $lastReq->personnel->name ?? '—' }}</span>
                     </td>
-                    <td class="text-end">
+
+                    <td class="text-end text-nowrap">
                         <a href="{{ route('supplies.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                         <form action="{{ route('supplies.destroy', $item) }}" method="POST" class="d-inline"
                               onsubmit="return confirm('Delete this item?');">
@@ -84,7 +97,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted py-3">No supply items found.</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-3">No supply items found.</td></tr>
                 @endforelse
             </tbody>
         </table>

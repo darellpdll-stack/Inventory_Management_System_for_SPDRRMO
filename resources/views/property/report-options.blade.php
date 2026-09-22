@@ -26,7 +26,7 @@
                         </select>
                     </div>
                     <button class="btn btn-primary">Generate Report</button>
-                    <a href="{{ route('property.index') }}" class="btn btn-light">Cancel</a>
+                    <a href="{{ route('reports.index') }}" class="btn btn-light">Cancel</a>
                 </form>
             </div>
         </div>
