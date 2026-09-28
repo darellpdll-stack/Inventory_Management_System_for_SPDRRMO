@@ -151,4 +151,22 @@ class SupplyItemController extends Controller
         $supply->delete();
         return back()->with('success', 'Supply item deleted.');
     }
+        public function show(SupplyItem $supply)
+    {
+        $supply->load('category');
+
+        $entries = $supply->stockEntries()
+            ->orderByDesc('date_received')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get();
+
+        $requestLines = $supply->requestLines()
+            ->with('request.personnel')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get();
+
+        return view('supplies.show', compact('supply', 'entries', 'requestLines'));
+    }
 }

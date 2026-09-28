@@ -46,7 +46,7 @@
             <tbody>
                 @forelse($items as $item)
                 <tr>
-                    <td><span class="text-muted small">{{ $item->product_code }}</span></td>
+                                        <td><a href="{{ route('supplies.show', $item) }}" class="btn btn-sm btn-light font-monospace">{{ $item->product_code }}</a></td>
                     <td>{{ $item->description }}</td>
                     <td>{{ $item->category->name ?? '—' }}</td>
                     <td class="text-center text-nowrap">{{ $item->balance_per_card }} {{ $item->unit }}</td>

@@ -35,13 +35,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    // Supplies
+    // Supplies — specific paths first, numeric wildcards last
     Route::get('/supplies', [SupplyItemController::class, 'index'])->name('supplies.index');
     Route::get('/supplies/create', [SupplyItemController::class, 'create'])->name('supplies.create');
     Route::post('/supplies', [SupplyItemController::class, 'store'])->name('supplies.store');
     Route::get('/supplies/category/{category}', [SupplyItemController::class, 'category'])->name('supplies.category');
     Route::get('/supplies/report/options', [SupplyItemController::class, 'reportOptions'])->name('supplies.report.options');
     Route::get('/supplies/report/generate', [SupplyItemController::class, 'report'])->name('supplies.report');
+    Route::get('/supplies/{supply}', [SupplyItemController::class, 'show'])->whereNumber('supply')->name('supplies.show');
     Route::get('/supplies/{supply}/edit', [SupplyItemController::class, 'edit'])->name('supplies.edit');
     Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
     Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
