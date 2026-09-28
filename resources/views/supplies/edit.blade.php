@@ -77,12 +77,20 @@
                                    class="form-control @error('minimum_stock') is-invalid @enderror" min="0" required>
                             @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Expiration Date <span class="text-muted">(optional)</span></label>
-                            <input type="date" name="expiration_date"
-                                   value="{{ old('expiration_date', optional($supply->expiration_date)->format('Y-m-d')) }}"
-                                   class="form-control @error('expiration_date') is-invalid @enderror">
-                            @error('expiration_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="tracksExpiry" name="tracks_expiry" value="1"
+                                       {{ old('tracks_expiry', $supply->tracks_expiry) ? 'checked' : '' }}>
+                                <label class="form-check-label small" for="tracksExpiry">This item has an expiry date</label>
+                            </div>
+                            <div id="expiryWrap" class="d-none">
+                                <label class="form-label">Expiration Date</label>
+                                <input type="date" name="expiration_date"
+                                       value="{{ old('expiration_date', optional($supply->expiration_date)->format('Y-m-d')) }}"
+                                       class="form-control @error('expiration_date') is-invalid @enderror">
+                                @error('expiration_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -97,3 +105,33 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+(function () {
+    const toggle = document.getElementById('tracksExpiry');
+    const wrap = document.getElementById('expiryWrap');
+    const category = document.querySelector('select[name="category_id"]');
+    if (!toggle || !wrap) return;
+
+    function sync() {
+        wrap.classList.toggle('d-none', !toggle.checked);
+    }
+
+    // turning the toggle on shows the date field
+    toggle.addEventListener('change', sync);
+
+    // picking Medical switches it on automatically
+    if (category) {
+        category.addEventListener('change', function () {
+            const name = category.options[category.selectedIndex].text.trim();
+            if (name === 'Medical') {
+                toggle.checked = true;
+                sync();
+            }
+        });
+    }
+
+    sync();
+})();
+</script>
+@endpush

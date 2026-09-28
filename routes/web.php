@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyItemController;
 use App\Http\Controllers\SupplyRequestController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StockEntryController;
 
 Route::get('/', fn () => redirect()->route('login'));
 
@@ -45,6 +46,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
     Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
 
+    // Stock-in (receiving)
+    Route::get('/supplies/{supply}/stock', [StockEntryController::class, 'create'])->name('stock.create');
+    Route::post('/supplies/{supply}/stock', [StockEntryController::class, 'store'])->name('stock.store');
+
     // Supply requests — any logged-in user can view and add
     Route::get('/requests', [SupplyRequestController::class, 'index'])->name('requests.index');
     Route::get('/requests/create', [SupplyRequestController::class, 'create'])->name('requests.create');
@@ -53,7 +58,7 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('supplyRequest')
         ->name('requests.show');
 
-    // Withdrawals
+    // Withdrawals — created only by approving a request
     Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
     // Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
     // Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');

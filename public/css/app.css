@@ -346,3 +346,5 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 
 [data-bs-theme="dark"] .group-tint { background-color: #18253a !important; }
 [data-bs-theme="dark"] .group-start { border-top-color: var(--line) !important; }
+
+.clickable-row { cursor: pointer; }

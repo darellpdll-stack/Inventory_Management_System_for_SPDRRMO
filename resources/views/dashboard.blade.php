@@ -96,41 +96,6 @@
     </div>
 </div>
 
-{{-- Activity panels --}}
-{{-- Recent withdrawals --}}
-<div class="dpanel mb-3" style="height:auto;">
-    <div class="dpanel-head">
-        <div class="dpanel-title">Recent withdrawals</div>
-        <a href="{{ route('withdrawals.index') }}" class="dpanel-link">View all</a>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Item</th>
-                    <th>Category</th>
-                    <th class="text-center">Quantity</th>
-                    <th>Withdrawn by</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($recentWithdrawals as $line)
-                <tr>
-                    <td>{{ $line->supplyItem->description ?? '—' }}</td>
-                    <td class="text-muted small">{{ $line->supplyItem->category->name ?? '—' }}</td>
-                    <td class="text-center">{{ $line->quantity }} {{ $line->supplyItem->unit ?? '' }}</td>
-                    <td>{{ $line->withdrawal->withdrawn_by ?? '—' }}</td>
-                    <td class="text-muted small">{{ optional($line->withdrawal)->date_withdrawn?->format('M d, Y') }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="5" class="dash-empty">No withdrawals yet. They'll show here once requests are approved.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
 {{-- Recent requests --}}
 <div class="dpanel" style="height:auto;">
     <div class="dpanel-head">
@@ -138,9 +103,10 @@
         <a href="{{ route('requests.index') }}" class="dpanel-link">View all</a>
     </div>
     <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
+        <table class="table table-sm table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
+                    <th>Request No.</th>
                     <th>Personnel</th>
                     <th>Items</th>
                     <th>Purpose</th>
@@ -150,7 +116,8 @@
             </thead>
             <tbody>
                 @forelse($recentRequests as $req)
-                <tr>
+                <tr class="clickable-row" data-href="{{ route('requests.show', $req) }}">
+                    <td><span class="req-no">{{ $req->requestNo() }}</span></td>
                     <td>{{ $req->personnel->name ?? '—' }}</td>
                     <td class="small">
                         {{ $req->items->map(fn ($i) => ($i->supplyItem->description ?? '—') . ' (' . $i->quantity . ')')->take(2)->join(', ') }}
@@ -160,13 +127,23 @@
                     </td>
                     <td class="text-muted small">{{ $req->purpose ?? '—' }}</td>
                     <td><span class="req-badge req-{{ $req->status }}">{{ ucfirst($req->status) }}</span></td>
-                    <td class="text-muted small">{{ $req->created_at->format('M d, Y') }}</td>
+                    <td class="text-muted small text-nowrap">{{ ($req->request_date ?? $req->created_at)->format('M d, Y') }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="dash-empty">No requests yet. Add one from the Requests page.</td></tr>
+                <tr><td colspan="6" class="dash-empty">No requests yet. Add one from the Requests page.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+        row.addEventListener('click', function () {
+            window.location = row.dataset.href;
+        });
+    });
+</script>
+@endpush

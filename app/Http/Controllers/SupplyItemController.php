@@ -71,12 +71,13 @@ class SupplyItemController extends Controller
             'balance_per_card' => 'required|integer|min:0',
             'on_hand_per_count' => 'required|integer|min:0',
             'minimum_stock' => 'nullable|integer|min:0',
-            'expiration_date' => 'nullable|date',
+            'tracks_expiry' => 'nullable|boolean',
+            'expiration_date' => 'nullable|date|required_if:tracks_expiry,1',
             'remarks' => 'nullable|string|max:255',
         ]);
 
         $validated['minimum_stock'] = $validated['minimum_stock'] ?? 0;
-
+        $validated['tracks_expiry'] = $request->boolean('tracks_expiry');
         SupplyItem::create($validated);
 
         return redirect()->route('supplies.index')->with('success', 'Supply item added.');
@@ -100,7 +101,8 @@ class SupplyItemController extends Controller
             'balance_per_card' => 'required|integer|min:0',
             'on_hand_per_count' => 'required|integer|min:0',
             'minimum_stock' => 'required|integer|min:0',
-            'expiration_date' => 'nullable|date',
+            'tracks_expiry' => 'nullable|boolean',
+            'expiration_date' => 'nullable|date|required_if:tracks_expiry,1',
             'remarks' => 'nullable|string|max:255',
         ]);
 

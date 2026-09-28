@@ -65,7 +65,7 @@
                     </td>
 
                     <td class="text-nowrap">
-                        @if($item->isMedical() && $item->expiration_date)
+                        @if($item->tracksExpiry() && $item->expiration_date)
                             @php $exp = $item->expiryStatus(); @endphp
                             <div class="small">{{ $item->expiration_date->format('M d, Y') }}</div>
                             @if($exp === 'expired')
@@ -88,6 +88,9 @@
                     </td>
 
                     <td class="text-end text-nowrap">
+                        <a href="{{ route('stock.create', $item) }}" class="btn btn-sm btn-outline-success" title="Add stock">
+                            <i class="bi bi-plus-circle"></i>
+                        </a>
                         <a href="{{ route('supplies.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                         <form action="{{ route('supplies.destroy', $item) }}" method="POST" class="d-inline"
                               onsubmit="return confirm('Delete this item?');">

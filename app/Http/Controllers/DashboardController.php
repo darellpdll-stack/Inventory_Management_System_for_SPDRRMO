@@ -6,7 +6,7 @@ use App\Models\SupplyItem;
 use App\Models\SupplyCategory;
 use App\Models\PropertyItem;
 use App\Models\SupplyRequest;
-use App\Models\WithdrawalItem;
+
 
 class DashboardController extends Controller
 {
@@ -31,15 +31,9 @@ class DashboardController extends Controller
         $ok = SupplyItem::whereColumn('balance_per_card', '>', 'minimum_stock')
             ->where('balance_per_card', '>', 0)->count();
 
-        // activity panels
-        $recentWithdrawals = WithdrawalItem::with(['supplyItem.category', 'withdrawal'])
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get();
-
-        $recentRequests = SupplyRequest::with(['personnel', 'items.supplyItem'])
+         $recentRequests = SupplyRequest::with(['personnel', 'items.supplyItem'])
             ->orderByDesc('created_at')
-            ->limit(5)
+            ->limit(8)
             ->get();
 
         return view('dashboard', compact(
@@ -47,7 +41,7 @@ class DashboardController extends Controller
             'totalProperties', 'propertyRecords', 'lowStockCount',
             'totalRequests', 'pendingRequests',
             'outOfStock', 'low', 'ok',
-            'recentWithdrawals', 'recentRequests'
+            'recentRequests'
         ));
     }
 }

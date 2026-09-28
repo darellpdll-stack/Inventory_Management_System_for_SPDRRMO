@@ -86,17 +86,28 @@
         </div>
     </div>
 
-    {{-- Timeline --}}
+        {{-- Timeline --}}
     <div class="col-lg-4">
         <div class="dpanel">
             <div class="dpanel-title mb-2">Timeline</div>
 
             <div class="timeline-item">
-                <div class="detail-label">Submitted</div>
+                <div class="detail-label">Requested</div>
+                <div class="timeline-when">{{ ($supplyRequest->request_date ?? $supplyRequest->created_at)->format('M d, Y') }}</div>
+                <div class="timeline-by">by {{ $supplyRequest->personnel->name ?? '—' }}</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="detail-label">Encoded</div>
                 <div class="timeline-when">{{ $supplyRequest->created_at->format('M d, Y g:i A') }}</div>
             </div>
 
-            @if($supplyRequest->status !== 'pending')
+            @if($supplyRequest->status === 'pending')
+                <div class="timeline-item">
+                    <div class="detail-label">Waiting for approval</div>
+                    <div class="timeline-by">No action taken yet.</div>
+                </div>
+            @else
                 <div class="timeline-item">
                     <div class="detail-label">{{ ucfirst($supplyRequest->status) }}</div>
                     <div class="timeline-when">{{ $supplyRequest->reviewed_at?->format('M d, Y g:i A') }}</div>
@@ -105,15 +116,17 @@
                         <div class="timeline-by mt-1">Reason: {{ $supplyRequest->decline_reason }}</div>
                     @endif
                 </div>
-            @else
+            @endif
+
+            @if($supplyRequest->status === 'approved')
                 <div class="timeline-item">
-                    <div class="detail-label">Waiting for approval</div>
-                    <div class="timeline-by">No action taken yet.</div>
+                    <div class="detail-label">Released</div>
+                    <div class="timeline-when">{{ $supplyRequest->reviewed_at?->format('M d, Y g:i A') }}</div>
+                    <div class="timeline-by">Stock deducted on approval</div>
                 </div>
             @endif
         </div>
     </div>
-</div>
 
 {{-- Decline modal --}}
 @if($isAdmin && $supplyRequest->status === 'pending')

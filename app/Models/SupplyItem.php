@@ -10,11 +10,12 @@ class SupplyItem extends Model
     protected $fillable = [
         'category_id', 'product_code', 'stock_no', 'description',
         'unit', 'unit_value', 'balance_per_card', 'on_hand_per_count',
-        'minimum_stock', 'expiration_date', 'remarks',
+        'minimum_stock', 'expiration_date', 'tracks_expiry', 'remarks',
     ];
 
     protected $casts = [
         'expiration_date' => 'date',
+        'tracks_expiry' => 'boolean',
     ];
 
     public function category()
@@ -59,9 +60,9 @@ class SupplyItem extends Model
     }
 
     // only Medical items track expiry
-    public function isMedical(): bool
+        public function tracksExpiry(): bool
     {
-        return optional($this->category)->name === 'Medical';
+        return (bool) $this->tracks_expiry;
     }
 
     // shortage/overage calculated, not stored
@@ -91,5 +92,10 @@ class SupplyItem extends Model
     public function latestRequestLine()
     {
         return $this->hasOne(\App\Models\SupplyRequestItem::class, 'supply_item_id')->latestOfMany();
+    }
+    
+        public function stockEntries()
+    {
+        return $this->hasMany(\App\Models\StockEntry::class);
     }
 }
