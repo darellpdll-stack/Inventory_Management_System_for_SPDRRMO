@@ -46,7 +46,7 @@
             <tbody>
                 @forelse($items as $item)
                 <tr>
-                                        <td><a href="{{ route('supplies.show', $item) }}" class="btn btn-sm btn-light font-monospace">{{ $item->product_code }}</a></td>
+                    <td><a href="{{ route('supplies.show', $item) }}" class="btn btn-sm btn-light font-monospace">{{ $item->product_code }}</a></td>
                     <td>{{ $item->description }}</td>
                     <td>{{ $item->category->name ?? '—' }}</td>
                     <td class="text-center text-nowrap">{{ $item->balance_per_card }} {{ $item->unit }}</td>
@@ -64,8 +64,23 @@
                         @endswitch
                     </td>
 
-                    <td class="text-nowrap">
-                        @if($item->tracksExpiry() && $item->expiration_date)
+                                        <td class="text-nowrap">
+                        @php $batchExpiry = $item->earliestExpiry(); @endphp
+                        @if($item->tracksExpiry() && $batchExpiry)
+                            @php
+                                $exp = $batchExpiry->isPast() ? 'expired'
+                                     : ($batchExpiry->lte(now()->addMonths(3)) ? 'expiring' : 'safe');
+                            @endphp
+                            <div class="small">{{ $batchExpiry->format('M d, Y') }}</div>
+                            @if($exp === 'expired')
+                                <span class="badge bg-dark">Expired</span>
+                            @elseif($exp === 'expiring')
+                                <span class="badge bg-warning text-dark">Expiring soon</span>
+                            @else
+                                <span class="badge bg-success">Safe</span>
+                            @endif
+                        @elseif($item->tracksExpiry() && $item->expiration_date)
+                            {{-- no batches yet, fall back to the item's own date --}}
                             @php $exp = $item->expiryStatus(); @endphp
                             <div class="small">{{ $item->expiration_date->format('M d, Y') }}</div>
                             @if($exp === 'expired')

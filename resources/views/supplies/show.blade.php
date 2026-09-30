@@ -102,6 +102,60 @@
     </div>
 </div>
 
+{{-- Batches in stock --}}
+<div class="dpanel mb-3">
+    <div class="dpanel-head">
+        <div class="dpanel-title">Batches in Stock</div>
+        <span class="activity-date">{{ $activeBatches->sum('remaining_quantity') }} {{ $supply->unit }} across {{ $activeBatches->count() }} {{ Str::plural('batch', $activeBatches->count()) }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Batch</th>
+                    <th class="text-nowrap">Date Received</th>
+                    <th>Delivered by</th>
+                    <th class="text-nowrap">Ref. No.</th>
+                    <th class="text-center">Received</th>
+                    <th class="text-center">Remaining</th>
+                    <th class="text-nowrap">Expiry</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($activeBatches as $i => $batch)
+                    <tr>
+                        <td class="text-muted small">Batch {{ $i + 1 }}</td>
+                        <td class="text-nowrap">{{ $batch->date_received->format('M d, Y') }}</td>
+                        <td>{{ $batch->delivered_by ?? '—' }}</td>
+                        <td class="cell-sub">{{ $batch->reference_no ?? '—' }}</td>
+                        <td class="text-center text-muted">{{ $batch->quantity }} {{ $supply->unit }}</td>
+                        <td class="text-center fw-semibold">{{ $batch->remaining_quantity }} {{ $supply->unit }}</td>
+                        <td class="text-nowrap">
+                            @if($batch->expiration_date)
+                                <div class="small">{{ $batch->expiration_date->format('M d, Y') }}</div>
+                                @switch($batch->expiryStatus())
+                                    @case('expired')
+                                        <span class="badge bg-dark">Expired</span>
+                                        @break
+                                    @case('expiring')
+                                        <span class="badge bg-warning text-dark">Expiring soon</span>
+                                        @break
+                                    @default
+                                        <span class="badge bg-success">Safe</span>
+                                @endswitch
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="dash-empty">No batches with stock. Add a delivery to record one.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div class="row g-3">
     {{-- Receiving history --}}
     <div class="col-lg-6">
@@ -124,7 +178,7 @@
                         @forelse($entries as $entry)
                         <tr>
                             <td class="text-nowrap">{{ $entry->date_received->format('M d, Y') }}</td>
-                            <td class="text-center text-success fw-semibold">+{{ $entry->quantity }}</td>
+                            <td class="text-center text-success fw-semibold">+{{ $entry->quantity }} {{ $supply->unit }}</td>
                             <td>{{ $entry->delivered_by ?? '—' }}</td>
                             <td class="text-muted small text-nowrap">{{ $entry->expiration_date?->format('M d, Y') ?? '—' }}</td>
                         </tr>

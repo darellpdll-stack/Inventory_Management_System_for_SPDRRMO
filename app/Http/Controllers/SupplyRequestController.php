@@ -185,6 +185,15 @@ class SupplyRequestController extends Controller
                     $item->decrement('balance_per_card', $qty);
                     $item->decrement('on_hand_per_count', $qty);
 
+                    // take from the earliest-expiring batch first
+                    $toTake = $qty;
+                    foreach ($item->activeBatches()->lockForUpdate()->get() as $batch) {
+                        if ($toTake < 1) break;
+                        $take = min($toTake, $batch->remaining_quantity);
+                        $batch->decrement('remaining_quantity', $take);
+                        $toTake -= $take;
+                    }
+
                     $requestItem->increment('released_quantity', $qty);
                 }
 

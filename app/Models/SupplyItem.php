@@ -98,4 +98,23 @@ class SupplyItem extends Model
     {
         return $this->hasMany(\App\Models\StockEntry::class);
     }
+
+        // batches that still have stock, earliest expiry first
+    public function activeBatches()
+    {
+        return $this->stockEntries()
+            ->where('remaining_quantity', '>', 0)
+            ->orderByRaw('expiration_date ASC NULLS LAST')
+            ->orderBy('date_received');
+    }
+
+    // the soonest expiry among batches that still have stock
+    public function earliestExpiry()
+    {
+        return $this->stockEntries()
+            ->where('remaining_quantity', '>', 0)
+            ->whereNotNull('expiration_date')
+            ->orderBy('expiration_date')
+            ->value('expiration_date');
+    }
 }

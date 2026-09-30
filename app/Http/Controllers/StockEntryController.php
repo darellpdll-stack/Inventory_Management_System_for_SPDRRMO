@@ -42,6 +42,7 @@ class StockEntryController extends Controller
                 'delivered_by' => $validated['delivered_by'] ?? null,
                 'reference_no' => $validated['reference_no'] ?? null,
                 'quantity' => $validated['quantity'],
+                'remaining_quantity' => $validated['quantity'],
                 'expiration_date' => $validated['expiration_date'] ?? null,
                 'remarks' => $validated['remarks'] ?? null,
                 'recorded_by' => Auth::id(),

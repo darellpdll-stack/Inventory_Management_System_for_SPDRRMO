@@ -13,7 +13,7 @@ class SupplyItemController extends Controller
     public function index(Request $request)
     {
         $categories = SupplyCategory::all();
-        $query = SupplyItem::with(['category', 'latestRequestLine.request.personnel']);
+        $query = SupplyItem::with(['category', 'latestRequestLine.request.personnel', 'stockEntries']);
 
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
@@ -36,7 +36,7 @@ class SupplyItemController extends Controller
     {
         $categories = SupplyCategory::all();
 
-        $query = SupplyItem::with(['category', 'latestRequestLine.request.personnel'])
+        $query = SupplyItem::with(['category', 'latestRequestLine.request.personnel', 'stockEntries'])
             ->where('category_id', $category->id);
 
         if ($request->filled('search')) {
@@ -151,15 +151,19 @@ class SupplyItemController extends Controller
         $supply->delete();
         return back()->with('success', 'Supply item deleted.');
     }
+        
         public function show(SupplyItem $supply)
     {
         $supply->load('category');
 
         $entries = $supply->stockEntries()
+            ->with('recordedBy')
             ->orderByDesc('date_received')
             ->orderByDesc('id')
             ->limit(10)
             ->get();
+
+        $activeBatches = $supply->activeBatches()->get();
 
         $requestLines = $supply->requestLines()
             ->with('request.personnel')
@@ -167,6 +171,6 @@ class SupplyItemController extends Controller
             ->limit(10)
             ->get();
 
-        return view('supplies.show', compact('supply', 'entries', 'requestLines'));
+        return view('supplies.show', compact('supply', 'entries', 'activeBatches', 'requestLines'));
     }
 }
