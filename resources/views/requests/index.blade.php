@@ -18,10 +18,14 @@
                    placeholder="Search request number or name…">
         </div>
         <select name="status" class="form-select" style="width:auto;" onchange="this.form.submit()">
-            <option value="all"      {{ $status === 'all'      ? 'selected' : '' }}>All statuses</option>
-            <option value="pending"  {{ $status === 'pending'  ? 'selected' : '' }}>Pending</option>
-            <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Approved</option>
-            <option value="declined" {{ $status === 'declined' ? 'selected' : '' }}>Declined</option>
+            <option value="all"         {{ $status === 'all'         ? 'selected' : '' }}>All statuses</option>
+            <option value="pending"     {{ $status === 'pending'     ? 'selected' : '' }}>Pending</option>
+            <option value="approved"    {{ $status === 'approved'    ? 'selected' : '' }}>Approved</option>
+            <option value="declined"    {{ $status === 'declined'    ? 'selected' : '' }}>Declined</option>
+            <option value="for_release" {{ $status === 'for_release' ? 'selected' : '' }}>For Release</option>
+            <option value="completed"   {{ $status === 'completed'   ? 'selected' : '' }}>Completed</option>
+            
+                        
         </select>
     </form>
 
@@ -29,11 +33,11 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Request No.</th>
-                    <th>Requester</th>
+                    <th class="text-nowrap">Request No.</th>
+                    <th class="text-nowrap">Requested by</th>
                     <th>Items</th>
-                    <th>Status</th>
-                    <th>Date Requested</th>
+                    <th class="text-nowrap">Status</th>
+                    <th class="text-nowrap">Date Requested</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -41,10 +45,13 @@
                 @forelse($requests as $req)
                     @php $first = $req->items->first(); @endphp
                     <tr>
-                        <td><a href="{{ route('requests.show', $req) }}" class="req-no">{{ $req->requestNo() }}</a></td>
-                        <td class="cell-main">{{ $req->personnel->name ?? '—' }}</td>
+                        <td class="text-nowrap"><a href="{{ route('requests.show', $req) }}" class="req-no">{{ $req->requestNo() }}</a></td>
+                        <td class="text-nowrap">{{ $req->personnel->name ?? '—' }}</td>
                         <td>
-                            <div class="cell-main">{{ $first->supplyItem->description ?? '—' }}</div>
+                            <div class="cell-main text-truncate" style="max-width: 320px;"
+                                 title="{{ $first->supplyItem->description ?? '' }}">
+                                {{ $first->supplyItem->description ?? '—' }}
+                            </div>
                             <div class="cell-sub">
                                 @if($req->items->count() > 1)
                                     +{{ $req->items->count() - 1 }} more {{ Str::plural('item', $req->items->count() - 1) }}
@@ -53,8 +60,8 @@
                                 @endif
                             </div>
                         </td>
-                        <td><span class="req-badge req-{{ $req->status }}">{{ ucfirst($req->status) }}</span></td>
-                        <td class="cell-main">{{ ($req->request_date ?? $req->created_at)->format('M d, Y') }}</td>
+                        <td class="text-nowrap"><span class="req-badge req-{{ $req->status }}">{{ $req->statusLabel() }}</span></td>
+                        <td class="text-nowrap">{{ ($req->request_date ?? $req->created_at)->format('M d, Y') }}</td>
                         <td class="text-end">
                             <a href="{{ route('requests.show', $req) }}" class="btn btn-sm btn-outline-primary" title="View">
                                 <i class="bi bi-eye"></i>

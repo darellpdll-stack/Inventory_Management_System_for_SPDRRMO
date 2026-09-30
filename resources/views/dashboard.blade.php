@@ -126,7 +126,7 @@
                         @endif
                     </td>
                     <td class="text-muted small">{{ $req->purpose ?? '—' }}</td>
-                    <td><span class="req-badge req-{{ $req->status }}">{{ ucfirst($req->status) }}</span></td>
+                    <span class="req-badge req-{{ $req->status }}">{{ $req->statusLabel() }}</span>
                     <td class="text-muted small text-nowrap">{{ ($req->request_date ?? $req->created_at)->format('M d, Y') }}</td>
                 </tr>
                 @empty

@@ -29,7 +29,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Product Code</label>
                             <input type="text" name="product_code" value="{{ old('product_code') }}"
-                                   class="form-control @error('product_code') is-invalid @enderror" placeholder="e.g. 2FGT6" required>
+                                   class="form-control @error('product_code') is-invalid @enderror" placeholder="e.g. 26OFS030" required>
                             @error('product_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6 mb-3">
@@ -40,61 +40,71 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Unit of Measure</label>
                             <input type="text" name="unit" value="{{ old('unit', 'pc') }}"
-                                   class="form-control @error('unit') is-invalid @enderror" required>
+                                   class="form-control @error('unit') is-invalid @enderror"
+                                   list="unitOptions" required>
+                            <datalist id="unitOptions">
+                                <option value="pc"><option value="box"><option value="pack">
+                                <option value="ream"><option value="bot"><option value="roll">
+                                <option value="set"><option value="doz"><option value="gal">
+                                <option value="kilo"><option value="unit"><option value="cart">
+                                <option value="tube"><option value="bundle"><option value="pair">
+                                <option value="meter"><option value="can"><option value="sachet">
+                                <option value="book"><option value="pad">
+                            </datalist>
                             @error('unit') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Unit Value (₱)</label>
                             <input type="number" step="0.01" name="unit_value" value="{{ old('unit_value', 0) }}"
                                    class="form-control @error('unit_value') is-invalid @enderror" min="0" required>
                             @error('unit_value') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                Minimum Stock
+                                <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="The system warns you when the balance falls to this number"></i>
+                            </label>
+                            <input type="number" name="minimum_stock" value="{{ old('minimum_stock', 0) }}"
+                                   class="form-control @error('minimum_stock') is-invalid @enderror" min="0">
+                            @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-1">
                             <label class="form-label">Balance Per Card (Quantity)</label>
                             <input type="number" name="balance_per_card" value="{{ old('balance_per_card', 0) }}"
                                    class="form-control @error('balance_per_card') is-invalid @enderror" min="0" required>
                             @error('balance_per_card') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-1">
                             <label class="form-label">On Hand Per Count (Quantity)</label>
                             <input type="number" name="on_hand_per_count" value="{{ old('on_hand_per_count', 0) }}"
                                    class="form-control @error('on_hand_per_count') is-invalid @enderror" min="0" required>
                             @error('on_hand_per_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-                    <div class="form-text mb-3" style="margin-top:-8px;">
-                        Balance Per Card is the recorded stock; On Hand Per Count is the actual physical count. They're normally equal — a difference shows as a shortage or overage on the report.
+                    <div class="form-text mb-3">
+                        Starting stock already on hand. New deliveries should be recorded through Add Stock so the receiving details are kept.
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                                Minimum Stock
-                                <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip"title="Alert level — leave blank if unnecessary"></i>
-                            </label>
-                            <input type="number" name="minimum_stock" value="{{ old('minimum_stock', 0) }}"
-                                   class="form-control @error('minimum_stock') is-invalid @enderror" min="0">
-                            @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="tracksExpiry" name="tracks_expiry" value="1"
+                                   {{ old('tracks_expiry') ? 'checked' : '' }}>
+                            <label class="form-check-label small" for="tracksExpiry">This item has an expiry date</label>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" role="switch"
-                                       id="tracksExpiry" name="tracks_expiry" value="1"
-                                       {{ old('tracks_expiry') ? 'checked' : '' }}>
-                                <label class="form-check-label small" for="tracksExpiry">This item has an expiry date</label>
-                            </div>
-                            <div id="expiryWrap" class="d-none">
-                                <label class="form-label">Expiration Date</label>
-                                <input type="date" name="expiration_date" value="{{ old('expiration_date') }}"
-                                       class="form-control @error('expiration_date') is-invalid @enderror">
-                                @error('expiration_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                            </div>
+                        <div id="expiryWrap" class="d-none" style="max-width: 280px;">
+                            <label class="form-label">Expiration Date</label>
+                            <input type="date" name="expiration_date" value="{{ old('expiration_date') }}"
+                                   class="form-control @error('expiration_date') is-invalid @enderror">
+                            @error('expiration_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
                         <input type="text" name="remarks" value="{{ old('remarks') }}" class="form-control">
@@ -107,6 +117,7 @@
     </div>
 </div>
 @endsection
+
 @push('scripts')
 <script>
 (function () {

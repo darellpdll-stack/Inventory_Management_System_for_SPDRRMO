@@ -4,7 +4,7 @@ use App\Http\Controllers\SupplyItemController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyItemController;
 use App\Http\Controllers\SupplyRequestController;
@@ -59,12 +59,9 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('supplyRequest')
         ->name('requests.show');
 
-    // Withdrawals — created only by approving a request
-    Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
-    // Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
-    // Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
-    Route::get('/withdrawals/{withdrawal}/receipt', [WithdrawalController::class, 'receipt'])->name('withdrawals.receipt');
-    Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'show'])->name('withdrawals.show');
+    // Withdrawals — the record of supplies released through requests
+    Route::get('/withdrawals', [ReleaseController::class, 'index'])->name('withdrawals.index');
+    Route::get('/withdrawals/{release}/receipt', [ReleaseController::class, 'receipt'])->name('withdrawals.receipt');
 
     // Personnel — all logged-in users can view and add
     Route::get('/personnel', [PersonnelController::class, 'index'])->name('personnel.index');
@@ -98,9 +95,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-        // Supply requests — approving and declining stay admin-only
+        // Supply requests — reviewing and releasing stay admin-only
         Route::get('/requests/qr', [SupplyRequestController::class, 'qrCode'])->name('requests.qr');
         Route::post('/requests/{supplyRequest}/approve', [SupplyRequestController::class, 'approve'])->name('requests.approve');
+        Route::post('/requests/{supplyRequest}/for-release', [SupplyRequestController::class, 'markForRelease'])->name('requests.forRelease');
         Route::post('/requests/{supplyRequest}/decline', [SupplyRequestController::class, 'decline'])->name('requests.decline');
+        Route::post('/requests/{supplyRequest}/release', [SupplyRequestController::class, 'release'])->name('requests.release');
     });
 });

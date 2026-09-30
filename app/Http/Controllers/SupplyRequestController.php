@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Release;
+use App\Models\ReleaseItem;
 use App\Models\Personnel;
 use App\Models\SupplyCategory;
 use App\Models\SupplyItem;
 use App\Models\SupplyRequest;
 use App\Models\SupplyRequestItem;
-use App\Models\Withdrawal;
-use App\Models\WithdrawalItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SupplyRequestController extends Controller
 {
-    public function index(Request $request)
+       public function index(Request $request)
     {
         $status = $request->get('status', 'all');
 
@@ -36,8 +36,9 @@ class SupplyRequestController extends Controller
             ->withQueryString();
 
         $pendingCount = SupplyRequest::where('status', 'pending')->count();
+        $forReleaseCount = SupplyRequest::where('status', 'for_release')->count();
 
-        return view('requests.index', compact('requests', 'status', 'pendingCount'));
+        return view('requests.index', compact('requests', 'status', 'pendingCount', 'forReleaseCount'));
     }
 
     public function create()
@@ -88,56 +89,116 @@ class SupplyRequestController extends Controller
 
     public function show(SupplyRequest $supplyRequest)
     {
-        $supplyRequest->load(['personnel', 'items.supplyItem.category', 'reviewedBy', 'withdrawal']);
+        $supplyRequest->load(['personnel', 'items.supplyItem.category', 'reviewedBy', 'releases.items.supplyItem', 'releases.releasedBy']);
         return view('requests.show', compact('supplyRequest'));
     }
 
-    // admin — approve: converts the request into a withdrawal
+        // admin — approve: the decision only, stock moves on release
+       
     public function approve(SupplyRequest $supplyRequest)
     {
         if ($supplyRequest->status !== 'pending') {
             return back()->with('error', 'This request has already been reviewed.');
         }
 
+        $supplyRequest->update([
+            'status' => 'approved',
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Request approved. Mark it for release once the items are ready.');
+    }
+        // admin — items are prepared and ready to hand out
+    public function markForRelease(SupplyRequest $supplyRequest)
+    {
+        if ($supplyRequest->status !== 'approved') {
+            return back()->with('error', 'Only approved requests can be marked for release.');
+        }
+
+        $supplyRequest->update(['status' => 'for_release']);
+
+        return back()->with('success', 'Request marked for release.');
+    }
+        // admin — hand out some or all of the approved items
+    public function release(Request $request, SupplyRequest $supplyRequest)
+    {
+        if (!in_array($supplyRequest->status, ['for_release'])) {
+            return back()->with('error', 'Only approved requests can be released.');
+        }
+
+        $validated = $request->validate([
+            'date_released' => 'required|date|before_or_equal:today',
+            'received_by' => 'nullable|string|max:255',
+            'remarks' => 'nullable|string|max:255',
+            'lines' => 'required|array',
+            'lines.*.request_item_id' => 'required|exists:supply_request_items,id',
+            'lines.*.quantity' => 'required|integer|min:0',
+        ]);
+
+        // nothing to do if every line was left at zero
+        $total = collect($validated['lines'])->sum('quantity');
+        if ($total < 1) {
+            return back()->with('error', 'Enter a quantity for at least one item.');
+        }
+
         try {
-            DB::transaction(function () use ($supplyRequest) {
-                $withdrawal = Withdrawal::create([
-                    'withdrawn_by' => $supplyRequest->personnel->name,
-                    'date_withdrawn' => now()->toDateString(),
-                    'remark' => $supplyRequest->purpose,
-                    'recorded_by' => Auth::id(),
+            DB::transaction(function () use ($validated, $supplyRequest) {
+                $release = Release::create([
+                    'supply_request_id' => $supplyRequest->id,
+                    'date_released' => $validated['date_released'],
+                    'received_by' => $validated['received_by'] ?? null,
+                    'remarks' => $validated['remarks'] ?? null,
+                    'released_by' => Auth::id(),
                 ]);
 
-                foreach ($supplyRequest->items as $line) {
-                    $item = SupplyItem::lockForUpdate()->find($line->supply_item_id);
+                foreach ($validated['lines'] as $line) {
+                    $qty = (int) $line['quantity'];
+                    if ($qty < 1) {
+                        continue;
+                    }
 
-                    if ($item->balance_per_card < $line->quantity) {
+                    $requestItem = SupplyRequestItem::lockForUpdate()->find($line['request_item_id']);
+
+                    // can't release more than what's still owed on this line
+                    if ($qty > $requestItem->remainingQuantity()) {
                         throw new \Exception(
-                            "Not enough stock for {$item->description}. Only {$item->balance_per_card} available, but {$line->quantity} was requested."
+                            "Cannot release {$qty} — only {$requestItem->remainingQuantity()} left to release for this item."
                         );
                     }
 
-                    WithdrawalItem::create([
-                        'withdrawal_id' => $withdrawal->id,
+                    $item = SupplyItem::lockForUpdate()->find($requestItem->supply_item_id);
+
+                    if ($item->balance_per_card < $qty) {
+                        throw new \Exception(
+                            "Not enough stock for {$item->description}. Only {$item->balance_per_card} available."
+                        );
+                    }
+
+                    ReleaseItem::create([
+                        'release_id' => $release->id,
                         'supply_item_id' => $item->id,
-                        'quantity' => $line->quantity,
+                        'quantity' => $qty,
                     ]);
 
-                    $item->decrement('balance_per_card', $line->quantity);
+                    // stock leaves the office now
+                    $item->decrement('balance_per_card', $qty);
+                    $item->decrement('on_hand_per_count', $qty);
+
+                    $requestItem->increment('released_quantity', $qty);
                 }
 
-                $supplyRequest->update([
-                    'status' => 'approved',
-                    'reviewed_by' => Auth::id(),
-                    'reviewed_at' => now(),
-                    'withdrawal_id' => $withdrawal->id,
-                ]);
+                // completed only when every line has been fully handed out
+                $supplyRequest->load('items');
+                if ($supplyRequest->isFullyReleased()) {
+                    $supplyRequest->update(['status' => 'completed']);
+                }
             });
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Request approved and recorded as a withdrawal.');
+        return back()->with('success', 'Items released and stock updated.');
     }
 
     // admin — decline

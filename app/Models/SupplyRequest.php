@@ -41,4 +41,23 @@ class SupplyRequest extends Model
     {
         return $this->belongsTo(Withdrawal::class, 'withdrawal_id');
     }
+
+        public function releases()
+    {
+        return $this->hasMany(Release::class);
+    }
+
+    // true once every line has been fully handed out
+    public function isFullyReleased(): bool
+    {
+        return $this->items->every(fn ($line) => $line->released_quantity >= $line->quantity);
+    }
+
+    public function statusLabel(): string
+    {
+        return match ($this->status) {
+            'for_release' => 'For Release',
+            default => ucfirst($this->status),
+        };
+    }
 }

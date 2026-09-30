@@ -253,10 +253,11 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 
 /* ---------- Request status badges ---------- */
 .req-badge { font-size: .7rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
-.req-pending { background: #fbeecf; color: #8a5a12; }
-.req-approved { background: #e3f1e6; color: #2f6b3d; }
-.req-declined { background: #f6e4e4; color: var(--danger); }
-
+.req-pending     { background: #fbeecf; color: #8a5a12; }   /* amber  — waiting */
+.req-approved    { background: #e7edf5; color: #0c3c7c; }   /* blue   — decided */
+.req-for_release { background: #e4eefb; color: #1b5fa8; }   /* lighter blue — ready */
+.req-completed   { background: #e3f1e6; color: #2f6b3d; }   /* green  — done */
+.req-declined    { background: #f6e4e4; color: var(--danger); } /* red — refused */
 /* ---------- Requests list & detail ---------- */
 .list-toolbar { display: flex; justify-content: space-between; gap: .75rem; flex-wrap: wrap; padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); }
 .list-toolbar .search-box { position: relative; flex: 1; max-width: 380px; }
@@ -334,9 +335,11 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 [data-bs-theme="dark"] .role-pill   { background: rgba(12,60,124,0.45); color: #9cc2f0; }
 [data-bs-theme="dark"] .role-staff  { background-color: #1b2940; color: var(--muted); border-color: var(--line); }
 
-[data-bs-theme="dark"] .req-pending  { background: rgba(238,163,22,0.18); color: #f5c066; }
-[data-bs-theme="dark"] .req-approved { background: rgba(63,160,90,0.2);   color: #8fd4a0; }
-[data-bs-theme="dark"] .req-declined { background: rgba(217,83,79,0.18);  color: #f09595; }
+[data-bs-theme="dark"] .req-pending     { background: rgba(238,163,22,0.18); color: #f5c066; }
+[data-bs-theme="dark"] .req-approved    { background: rgba(12,60,124,0.45);  color: #9cc2f0; }
+[data-bs-theme="dark"] .req-for_release { background: rgba(27,95,168,0.35);  color: #bcd9f7; }
+[data-bs-theme="dark"] .req-completed   { background: rgba(63,160,90,0.2);   color: #8fd4a0; }
+[data-bs-theme="dark"] .req-declined    { background: rgba(217,83,79,0.18);  color: #f09595; }
 
 [data-bs-theme="dark"] .req-no,
 [data-bs-theme="dark"] .dpanel-link { color: #9cc2f0; }
@@ -346,5 +349,6 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 
 [data-bs-theme="dark"] .group-tint { background-color: #18253a !important; }
 [data-bs-theme="dark"] .group-start { border-top-color: var(--line) !important; }
+
 
 .clickable-row { cursor: pointer; }

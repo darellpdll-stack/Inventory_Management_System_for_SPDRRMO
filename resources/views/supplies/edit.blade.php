@@ -42,7 +42,17 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Unit of Measure</label>
                             <input type="text" name="unit" value="{{ old('unit', $supply->unit) }}"
-                                   class="form-control @error('unit') is-invalid @enderror" required>
+                                   class="form-control @error('unit') is-invalid @enderror"
+                                   list="unitOptions" required>
+                            <datalist id="unitOptions">
+                                <option value="pc"><option value="box"><option value="pack">
+                                <option value="ream"><option value="bot"><option value="roll">
+                                <option value="set"><option value="doz"><option value="gal">
+                                <option value="kilo"><option value="unit"><option value="cart">
+                                <option value="tube"><option value="bundle"><option value="pair">
+                                <option value="meter"><option value="can"><option value="sachet">
+                                <option value="book"><option value="pad">
+                            </datalist>
                             @error('unit') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-4 mb-3">
@@ -52,47 +62,49 @@
                             @error('unit_value') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Balance Per Card (Quantity)</label>
-                            <input type="number" name="balance_per_card" value="{{ old('balance_per_card', $supply->balance_per_card) }}"
-                                   class="form-control @error('balance_per_card') is-invalid @enderror" min="0" required>
-                            @error('balance_per_card') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">On Hand Per Count (Quantity)</label>
-                            <input type="number" name="on_hand_per_count" value="{{ old('on_hand_per_count', $supply->on_hand_per_count) }}"
-                                   class="form-control @error('on_hand_per_count') is-invalid @enderror" min="0" required>
-                            @error('on_hand_per_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="form-text mb-3" style="margin-top:-8px;">
-                        Balance Per Card is the recorded stock; On Hand Per Count is the actual physical count. They're normally equal — a difference shows as a shortage or overage on the report.
-                    </div>
-                        <div class="col-md-4 mb-3">
                             <label class="form-label">
                                 Minimum Stock
-                                <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip"title="Alert level — leave blank if unnecessary"></i>
+                                <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="The system warns you when the balance falls to this number"></i>
                             </label>
                             <input type="number" name="minimum_stock" value="{{ old('minimum_stock', $supply->minimum_stock) }}"
                                    class="form-control @error('minimum_stock') is-invalid @enderror" min="0" required>
                             @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" role="switch"
-                                       id="tracksExpiry" name="tracks_expiry" value="1"
-                                       {{ old('tracks_expiry', $supply->tracks_expiry) ? 'checked' : '' }}>
-                                <label class="form-check-label small" for="tracksExpiry">This item has an expiry date</label>
-                            </div>
-                            <div id="expiryWrap" class="d-none">
-                                <label class="form-label">Expiration Date</label>
-                                <input type="date" name="expiration_date"
-                                       value="{{ old('expiration_date', optional($supply->expiration_date)->format('Y-m-d')) }}"
-                                       class="form-control @error('expiration_date') is-invalid @enderror">
-                                @error('expiration_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-1">
+                            <label class="form-label">Balance Per Card (Quantity)</label>
+                            <input type="number" name="balance_per_card" value="{{ old('balance_per_card', $supply->balance_per_card) }}"
+                                   class="form-control @error('balance_per_card') is-invalid @enderror" min="0" required>
+                            @error('balance_per_card') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <label class="form-label">On Hand Per Count (Quantity)</label>
+                            <input type="number" name="on_hand_per_count" value="{{ old('on_hand_per_count', $supply->on_hand_per_count) }}"
+                                   class="form-control @error('on_hand_per_count') is-invalid @enderror" min="0" required>
+                            @error('on_hand_per_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
+                    <div class="form-text mb-3">
+                        Balance Per Card is the recorded stock; On Hand Per Count is the actual physical count. They're normally equal — a difference shows as a shortage or overage on the report.
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="tracksExpiry" name="tracks_expiry" value="1"
+                                   {{ old('tracks_expiry', $supply->tracks_expiry) ? 'checked' : '' }}>
+                            <label class="form-check-label small" for="tracksExpiry">This item has an expiry date</label>
+                        </div>
+                        <div id="expiryWrap" class="d-none" style="max-width: 280px;">
+                            <label class="form-label">Expiration Date</label>
+                            <input type="date" name="expiration_date"
+                                   value="{{ old('expiration_date', optional($supply->expiration_date)->format('Y-m-d')) }}"
+                                   class="form-control @error('expiration_date') is-invalid @enderror">
+                            @error('expiration_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
                         <input type="text" name="remarks" value="{{ old('remarks', $supply->remarks) }}" class="form-control">
@@ -105,6 +117,7 @@
     </div>
 </div>
 @endsection
+
 @push('scripts')
 <script>
 (function () {

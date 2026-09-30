@@ -17,4 +17,9 @@ class SupplyRequestItem extends Model
     {
         return $this->belongsTo(SupplyItem::class, 'supply_item_id');
     }
+
+        public function remainingQuantity(): int
+    {
+        return max($this->quantity - $this->released_quantity, 0);
+    }
 }

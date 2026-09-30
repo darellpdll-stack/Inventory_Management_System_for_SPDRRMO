@@ -10,88 +10,70 @@
     <a href="{{ route('requests.index') }}" class="btn btn-outline-primary"><i class="bi bi-inbox"></i> Go to Requests</a>
 </div>
 
-<form method="GET" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <select name="category" class="form-select" onchange="this.form.submit()">
+<div class="card shadow-sm">
+    <form method="GET" class="list-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                   placeholder="Search person, item, or request no…">
+        </div>
+        <select name="category" class="form-select" style="width:auto;" onchange="this.form.submit()">
             <option value="">All Categories</option>
             @foreach($categories as $cat)
                 <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
             @endforeach
         </select>
-    </div>
-    <div class="col-md-5">
-        <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search person or item...">
-    </div>
-    <div class="col-md-3">
-        <button class="btn btn-outline-secondary w-100">Search</button>
-    </div>
-</form>
+    </form>
 
-<div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table mb-0 align-middle">
+        <table class="table align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>No.</th>
                     <th class="text-nowrap">Request No.</th>
-                    <th class="text-nowrap">Unit &amp; Quantity</th>
-                    <th>Item Description</th>
-                    <th class="text-nowrap">Withdrawn By</th>
-                    <th class="text-nowrap">Date Withdrawn</th>
-                    <th class="text-nowrap">Date Returned</th>
-                    <th>Remark</th>
-                    <th></th>
+                    <th class="text-nowrap">Date Released</th>
+                    <th>Items</th>
+                    <th class="text-nowrap">Requested by</th>
+                    <th class="text-nowrap">Received by</th>
+                    <th class="text-nowrap">Released by</th>
+                    <th>Remarks</th>
+                    <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @php $rowNo = ($withdrawals->currentPage() - 1) * $withdrawals->perPage() + 1; $groupIndex = 0; @endphp
-                @forelse($withdrawals as $w)
-                    @php $groupIndex++; @endphp
-                    @foreach($w->items as $i => $line)
-                    <tr class="{{ $groupIndex % 2 === 0 ? 'group-tint' : '' }} {{ $i === 0 && $groupIndex > 1 ? 'group-start' : '' }}">
-                        <td>{{ $rowNo++ }}</td>
+                @forelse($releases as $release)
+                    <tr>
                         <td class="text-nowrap">
-                            @if($i === 0)
-                                @if($w->supplyRequest)
-                                    <a href="{{ route('requests.show', $w->supplyRequest) }}" class="req-no">{{ $w->supplyRequest->requestNo() }}</a>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
-                            @else
-                                <span class="text-muted">"</span>
-                            @endif
+                            <a href="{{ route('requests.show', $release->supply_request_id) }}" class="req-no">
+                                {{ $release->request?->requestNo() ?? '—' }}
+                            </a>
                         </td>
-                        <td class="text-nowrap">{{ $line->quantity }} {{ $line->supplyItem->unit ?? '' }}</td>
-                        <td>{{ $line->supplyItem->description ?? '—' }}</td>
-                        <td class="text-nowrap">
-                            @if($i === 0) {{ $w->withdrawn_by }} @else <span class="text-muted">"</span> @endif
-                        </td>
-                        <td class="text-nowrap">
-                            @if($i === 0) {{ $w->date_withdrawn->format('M d, Y') }} @else <span class="text-muted">"</span> @endif
-                        </td>
-                        <td class="text-nowrap">
-                            @if($i === 0) {{ $w->date_returned ? $w->date_returned->format('M d, Y') : '—' }} @else <span class="text-muted">"</span> @endif
-                        </td>
+                        <td class="text-nowrap">{{ $release->date_released->format('M d, Y') }}</td>
                         <td>
-                            @if($i === 0) {{ $w->remark ?? '—' }} @else <span class="text-muted">"</span> @endif
+                            @foreach($release->items as $line)
+                                <div class="cell-main">
+                                    {{ $line->supplyItem->description ?? '—' }}
+                                    <span class="cell-sub">— {{ $line->quantity }} {{ $line->supplyItem->unit ?? '' }}</span>
+                                </div>
+                            @endforeach
                         </td>
+                        <td class="text-nowrap">{{ $release->request?->personnel?->name ?? '—' }}</td>
+                        <td class="text-nowrap">{{ $release->received_by ?? '—' }}</td>
+                        <td class="text-nowrap">{{ $release->releasedBy->name ?? '—' }}</td>
+                        <td class="cell-sub">{{ $release->remarks ?? '—' }}</td>
                         <td class="text-end">
-                            @if($i === 0)
-                                <a href="{{ route('withdrawals.receipt', $w) }}" target="_blank"
-                                   class="btn btn-sm btn-outline-primary" title="Print receipt">
-                                    <i class="bi bi-printer"></i>
-                                </a>
-                            @endif
+                            <a href="{{ route('withdrawals.receipt', $release) }}" target="_blank"
+                               class="btn btn-sm btn-outline-primary" title="Print receipt">
+                                <i class="bi bi-printer"></i>
+                            </a>
                         </td>
                     </tr>
-                    @endforeach
                 @empty
-                    <tr><td colspan="9" class="text-center text-muted py-3">No withdrawals yet. Approve a request and it will appear here.</td></tr>
+                    <tr><td colspan="8" class="dash-empty">No releases yet. Approve a request and release its items.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-3">{{ $withdrawals->links() }}</div>
+<div class="mt-3">{{ $releases->links() }}</div>
 @endsection
