@@ -115,7 +115,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($recentRequests as $req)
+             @forelse($recentRequests as $req)
                 <tr class="clickable-row" data-href="{{ route('requests.show', $req) }}">
                     <td><span class="req-no">{{ $req->requestNo() }}</span></td>
                     <td>{{ $req->personnel->name ?? '—' }}</td>
@@ -126,7 +126,7 @@
                         @endif
                     </td>
                     <td class="text-muted small">{{ $req->purpose ?? '—' }}</td>
-                    <span class="req-badge req-{{ $req->status }}">{{ $req->statusLabel() }}</span>
+                    <td><span class="req-badge req-{{ $req->status }}">{{ $req->statusLabel() }}</span></td>
                     <td class="text-muted small text-nowrap">{{ ($req->request_date ?? $req->created_at)->format('M d, Y') }}</td>
                 </tr>
                 @empty
