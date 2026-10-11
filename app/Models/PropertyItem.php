@@ -21,6 +21,47 @@ class PropertyItem extends Model
         return $this->belongsTo(Personnel::class, 'personnel_id');
     }
 
+    public function borrowedUnits()
+    {
+        return $this->hasMany(BorrowedUnit::class);
+    }
+
+    // units physically with a borrower right now
+    public function unitsOut()
+    {
+        return $this->borrowedUnits()->stillOut();
+    }
+
+    // units spoken for by a live borrowing — reserved, ready, or already out
+    public function unitsCommitted()
+    {
+        return $this->borrowedUnits()->committed();
+    }
+
+    // property numbers currently with a borrower
+    public function numbersOut(): array
+    {
+        return $this->unitsOut()->pluck('property_no')->filter()->all();
+    }
+
+    // property numbers that cannot be promised to anyone else
+    public function numbersCommitted(): array
+    {
+        return $this->unitsCommitted()->pluck('property_no')->filter()->all();
+    }
+
+    // how many of this item can still be lent out
+    public function availableQuantity(): int
+    {
+        return max(0, $this->quantity - $this->unitsCommitted()->count());
+    }
+
+    // the property numbers that can still be lent out
+    public function availableNumbers(): array
+    {
+        return array_values(array_diff($this->propertyNoList(), $this->numbersCommitted()));
+    }
+
     public function propertyNoList(): array
 {
     if ($this->quantity <= 1 || !$this->property_no) {

@@ -99,6 +99,11 @@ class SupplyItem extends Model
         return $this->hasMany(\App\Models\StockEntry::class);
     }
 
+        public function returns()
+    {
+        return $this->hasMany(\App\Models\SupplyReturn::class);
+    }
+
         // batches that still have stock, earliest expiry first
     public function activeBatches()
     {
@@ -116,5 +121,14 @@ class SupplyItem extends Model
             ->whereNotNull('expiration_date')
             ->orderBy('expiration_date')
             ->value('expiration_date');
+    }
+        // keep the stored expiry in step with the batches on hand
+    public function refreshExpiryFromBatches(): void
+    {
+        if (! $this->tracksExpiry()) {
+            return;
+        }
+
+        $this->update(['expiration_date' => $this->earliestExpiry()]);
     }
 }

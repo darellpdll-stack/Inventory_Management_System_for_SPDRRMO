@@ -37,10 +37,11 @@
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
-                <tr>
-                    <th>Accountable Person</th>
-                    <th>Description</th>
+                 <tr>
                     <th>Property No.</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Accountable Person</th>
                     <th>Unit</th>
                     <th class="text-center">On Hand</th>
                     <th>Type</th>
@@ -51,9 +52,12 @@
             <tbody>
     @forelse($items as $item)
     <tr>
-        <td>{{ $item->personnel->name ?? '—' }}</td>
-        <td>{{ $item->description }}</td>
         <td class="text-muted small">{{ $item->propertyNoRange() }}</td>
+        <td>
+            <a href="{{ route('property.show', $item) }}" class="req-no">{{ $item->description }}</a>
+        </td>
+        <td class="text-muted small">{{ $item->category->name ?? '—' }}</td>
+        <td>{{ $item->personnel->name ?? '—' }}</td>
         <td>{{ $item->unit }}</td>
         <td class="text-center">{{ $item->on_hand_per_count }}</td>
         <td>
@@ -64,21 +68,23 @@
             @endif
         </td>
         <td>{{ $item->remarks ?? '—' }}</td>
-        <td class="text-end">
+        <td class="text-end text-nowrap">
             @if(Auth::user()->role === 'admin')
-                <a href="{{ route('property.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                <form action="{{ route('property.destroy', $item) }}" method="POST" class="d-inline"
-                      onsubmit="return confirm('Delete this property item?');">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-sm btn-outline-danger">Delete</button>
-                </form>
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{{ route('property.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <form action="{{ route('property.destroy', $item) }}" method="POST"
+                          onsubmit="return confirm('Delete this property item?');">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </div>
             @else
                 <span class="text-muted small">—</span>
             @endif
         </td>
     </tr>
     @empty
-    <tr><td colspan="8" class="text-center text-muted py-3">No property items found.</td></tr>
+    <tr><td colspan="9" class="text-center text-muted py-3">No property items found.</td></tr>
     @endforelse
 </tbody>
         </table>

@@ -49,25 +49,42 @@
                     </div>
 
                     <label class="form-label">Items Requested</label>
+                    @php
+                        // rebuild the rows the user had when validation sent the form back
+                        $oldItems = old('items');
+                        if (! is_array($oldItems) || count($oldItems) === 0) {
+                            $oldItems = [[]];
+                        }
+                        $itemsById = $items->keyBy('id');
+                    @endphp
                     <div id="itemRows">
-                        <div class="row g-2 mb-2 item-row">
-                            <div class="col-12 col-sm-7 mb-1 mb-sm-0">
-                                <input type="hidden" name="items[0][supply_item_id]" class="item-id">
-                                <button type="button" class="btn btn-outline-secondary w-100 text-start pick-item text-truncate">
-                                    Choose an item…
-                                </button>
-                            </div>
-                            <div class="col-9 col-sm-4">
-                                <div class="input-group">
-                                    <input type="number" name="items[0][quantity]" inputmode="numeric"
-                                           class="form-control" min="1" placeholder="Qty" required>
-                                    <span class="input-group-text unit-label">—</span>
+                        @foreach($oldItems as $i => $line)
+                            @php
+                                $chosen = isset($line['supply_item_id'])
+                                    ? $itemsById->get($line['supply_item_id'])
+                                    : null;
+                            @endphp
+                            <div class="row g-2 mb-2 item-row">
+                                <div class="col-12 col-sm-7 mb-1 mb-sm-0">
+                                    <input type="hidden" name="items[{{ $i }}][supply_item_id]" class="item-id"
+                                           value="{{ $chosen->id ?? '' }}">
+                                    <button type="button" class="btn btn-outline-secondary w-100 text-start pick-item text-truncate">
+                                        {{ $chosen->description ?? 'Choose an item…' }}
+                                    </button>
+                                </div>
+                                <div class="col-9 col-sm-4">
+                                    <div class="input-group">
+                                        <input type="number" name="items[{{ $i }}][quantity]" inputmode="numeric"
+                                               class="form-control" min="1" placeholder="Qty"
+                                               value="{{ $line['quantity'] ?? '' }}" required>
+                                        <span class="input-group-text unit-label">{{ $chosen->unit ?? '—' }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-3 col-sm-1 px-sm-0">
+                                    <button type="button" class="btn btn-outline-danger w-100 remove-row">×</button>
                                 </div>
                             </div>
-                            <div class="col-3 col-sm-1 px-sm-0">
-                                <button type="button" class="btn btn-outline-danger w-100 remove-row">×</button>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                     <button type="button" id="addRow" class="btn btn-outline-secondary btn-sm mb-4">+ Add another item</button>
 
@@ -128,7 +145,8 @@
     const catFilter = document.getElementById('pickerCategory');
     const emptyMsg = document.getElementById('pickerEmpty');
     let activeRow = null;
-    let rowIndex = 1;
+    // start numbering after whatever rows were rendered on the page
+    let rowIndex = document.querySelectorAll('#itemRows .item-row').length;
 
     const rowTemplate = (i) => `
         <div class="col-12 col-sm-7 mb-1 mb-sm-0">

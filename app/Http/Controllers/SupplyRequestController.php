@@ -194,6 +194,9 @@ class SupplyRequestController extends Controller
                         $toTake -= $take;
                     }
 
+                    // a drained batch may have been the earliest expiry — recheck
+                    $item->refresh()->refreshExpiryFromBatches();
+
                     $requestItem->increment('released_quantity', $qty);
                 }
 

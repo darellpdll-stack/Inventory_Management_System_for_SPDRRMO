@@ -10,6 +10,7 @@ use App\Http\Controllers\PropertyItemController;
 use App\Http\Controllers\SupplyRequestController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StockEntryController;
+use App\Http\Controllers\BorrowingController;
 
 Route::get('/', fn () => redirect()->route('login'));
 
@@ -27,13 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Users (admin-managed)
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    // User accounts are admin-only — see the admin group at the bottom
 
     // Supplies — specific paths first, numeric wildcards last
     Route::get('/supplies', [SupplyItemController::class, 'index'])->name('supplies.index');
@@ -45,7 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/supplies/{supply}', [SupplyItemController::class, 'show'])->whereNumber('supply')->name('supplies.show');
     Route::get('/supplies/{supply}/edit', [SupplyItemController::class, 'edit'])->name('supplies.edit');
     Route::put('/supplies/{supply}', [SupplyItemController::class, 'update'])->name('supplies.update');
-    Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
+    // supplies.destroy is admin-only — see the admin group at the bottom
 
     // Stock-in (receiving)
     Route::get('/supplies/{supply}/stock', [StockEntryController::class, 'create'])->name('stock.create');
@@ -75,12 +70,35 @@ Route::middleware('auth')->group(function () {
     Route::post('/property', [PropertyItemController::class, 'store'])->name('property.store');
     Route::get('/property/report/options', [PropertyItemController::class, 'reportOptions'])->name('property.report.options');
     Route::get('/property/report/generate', [PropertyItemController::class, 'report'])->name('property.report');
+    Route::get('/property/{property}', [PropertyItemController::class, 'show'])
+        ->whereNumber('property')
+        ->name('property.show');
+
+    // Borrowing — equipment lent out and returned; anyone can view and request
+    Route::get('/borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
+    Route::get('/borrowings/create', [BorrowingController::class, 'create'])->name('borrowings.create');
+    Route::post('/borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
+    Route::get('/borrowings/{borrowing}', [BorrowingController::class, 'show'])
+        ->whereNumber('borrowing')
+        ->name('borrowings.show');
+    Route::get('/borrowings/{borrowing}/form', [BorrowingController::class, 'form'])->name('borrowings.form');
 
     // Reports hub
     Route::view('/reports', 'reports.index')->name('reports.index');
 
     // Admin-only routes
     Route::middleware('admin')->group(function () {
+        // User accounts — creating, editing and deleting logins
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        // Deleting a supply item
+        Route::delete('/supplies/{supply}', [SupplyItemController::class, 'destroy'])->name('supplies.destroy');
+
         // Personnel edit/delete
         Route::get('/personnel/{person}/edit', [PersonnelController::class, 'edit'])->name('personnel.edit');
         Route::put('/personnel/{person}', [PersonnelController::class, 'update'])->name('personnel.update');
@@ -101,5 +119,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/requests/{supplyRequest}/for-release', [SupplyRequestController::class, 'markForRelease'])->name('requests.forRelease');
         Route::post('/requests/{supplyRequest}/decline', [SupplyRequestController::class, 'decline'])->name('requests.decline');
         Route::post('/requests/{supplyRequest}/release', [SupplyRequestController::class, 'release'])->name('requests.release');
+
+        // Borrowing — reviewing, releasing and receiving back
+        Route::post('/borrowings/{borrowing}/approve', [BorrowingController::class, 'approve'])->name('borrowings.approve');
+        Route::post('/borrowings/{borrowing}/decline', [BorrowingController::class, 'decline'])->name('borrowings.decline');
+        Route::post('/borrowings/{borrowing}/release', [BorrowingController::class, 'release'])->name('borrowings.release');
+        Route::post('/borrowings/{borrowing}/return', [BorrowingController::class, 'returnUnits'])->name('borrowings.return');
+
+        Route::post('/releases/{release}/returns', [\App\Http\Controllers\SupplyReturnController::class, 'store'])
+        ->name('returns.store');
     });
 });

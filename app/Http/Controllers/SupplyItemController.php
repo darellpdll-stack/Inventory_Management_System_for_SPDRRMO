@@ -7,6 +7,7 @@ use App\Models\SupplyItem;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class SupplyItemController extends Controller
 {
@@ -63,20 +64,21 @@ class SupplyItemController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:supply_categories,id',
-            'product_code' => 'required|string|max:100',
+            'product_code' => 'required|string|max:100|unique:supply_items,product_code',
             'stock_no' => 'nullable|string|max:100',
             'description' => 'required|string|max:255',
             'unit' => 'required|string|max:50',
             'unit_value' => 'required|numeric|min:0',
             'balance_per_card' => 'required|integer|min:0',
             'on_hand_per_count' => 'required|integer|min:0',
-            'minimum_stock' => 'nullable|integer|min:0',
+            'minimum_stock' => 'required|integer|min:0',
             'tracks_expiry' => 'nullable|boolean',
             'expiration_date' => 'nullable|date|required_if:tracks_expiry,1',
             'remarks' => 'nullable|string|max:255',
+        ], [
+            'product_code.unique' => 'That product code is already used by another supply item.',
         ]);
 
-        $validated['minimum_stock'] = $validated['minimum_stock'] ?? 0;
         $validated['tracks_expiry'] = $request->boolean('tracks_expiry');
         SupplyItem::create($validated);
 
@@ -93,7 +95,10 @@ class SupplyItemController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:supply_categories,id',
-            'product_code' => 'required|string|max:100',
+            'product_code' => [
+                'required', 'string', 'max:100',
+                Rule::unique('supply_items', 'product_code')->ignore($supply->id),
+            ],
             'stock_no' => 'nullable|string|max:100',
             'description' => 'required|string|max:255',
             'unit' => 'required|string|max:50',
@@ -104,7 +109,11 @@ class SupplyItemController extends Controller
             'tracks_expiry' => 'nullable|boolean',
             'expiration_date' => 'nullable|date|required_if:tracks_expiry,1',
             'remarks' => 'nullable|string|max:255',
+        ], [
+            'product_code.unique' => 'That product code is already used by another supply item.',
         ]);
+
+        $validated['tracks_expiry'] = $request->boolean('tracks_expiry');
 
         $supply->update($validated);
 
@@ -137,10 +146,6 @@ class SupplyItemController extends Controller
         // don't allow deleting an item that has withdrawal history
         if ($supply->withdrawalItems()->exists()) {
             return back()->with('error', "Can't delete \"{$supply->description}\" — it has withdrawal records. Deleting it would break the withdrawal history.");
-        }
-
-        if ($supply->requestLines()->exists()) {
-            return back()->with('error', 'This item appears in a supply request and can\'t be deleted.');
         }
 
         // or one that appears in a supply request

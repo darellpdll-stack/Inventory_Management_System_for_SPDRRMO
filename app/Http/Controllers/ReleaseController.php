@@ -14,6 +14,7 @@ class ReleaseController extends Controller
 
         $query = Release::with([
             'items.supplyItem.category',
+            'items.returns',
             'request.personnel',
             'releasedBy',
         ]);

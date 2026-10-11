@@ -41,6 +41,11 @@
             </a>
         </li>
         <li class="nav-item">
+            <a href="{{ route('borrowings.index') }}" class="nav-link {{ request()->routeIs('borrowings.*') ? 'active' : '' }}">
+                <i class="bi bi-arrow-left-right"></i> Borrowings
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i> Personnel
             </a>

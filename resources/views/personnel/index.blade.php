@@ -42,7 +42,7 @@
                             {{ strtoupper(substr($person->name, 0, 1)) }}
                         </div>
                     @endif
-                    <div class="fw-semibold text-dark">{{ $person->name }}</div>
+                    <div class="fw-semibold text-body">{{ $person->name }}</div>
                     <div class="small text-muted">{{ $person->position ?? '—' }}</div>
                 </div>
             </div>

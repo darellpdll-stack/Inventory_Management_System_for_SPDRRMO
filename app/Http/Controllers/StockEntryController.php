@@ -52,15 +52,14 @@ class StockEntryController extends Controller
             $item->increment('balance_per_card', $validated['quantity']);
             $item->increment('on_hand_per_count', $validated['quantity']);
 
-            // if this batch expires sooner than what's recorded, use the earlier date
-            if (!empty($validated['expiration_date'])) {
-                $batchExpiry = \Carbon\Carbon::parse($validated['expiration_date']);
-                if (!$item->expiration_date || $batchExpiry->lt($item->expiration_date)) {
-                    $item->expiration_date = $batchExpiry;
-                    $item->tracks_expiry = true;
-                    $item->save();
-                }
+            // a delivery with an expiry date means this item is expiry-tracked
+            if (!empty($validated['expiration_date']) && ! $item->tracks_expiry) {
+                $item->tracks_expiry = true;
+                $item->save();
             }
+
+            // the item's expiry always follows the earliest batch still in stock
+            $item->refresh()->refreshExpiryFromBatches();
         });
 
         return redirect()->route('stock.create', $supply)

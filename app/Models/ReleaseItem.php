@@ -17,4 +17,21 @@ class ReleaseItem extends Model
     {
         return $this->belongsTo(SupplyItem::class);
     }
+
+        public function returns()
+    {
+        return $this->hasMany(SupplyReturn::class);
+    }
+
+    // how much of this released line has already come back
+    public function returnedQuantity(): int
+    {
+        return (int) $this->returns()->sum('quantity');
+    }
+
+    // how much can still be returned
+    public function returnableQuantity(): int
+    {
+        return max(0, $this->quantity - $this->returnedQuantity());
+    }
 }

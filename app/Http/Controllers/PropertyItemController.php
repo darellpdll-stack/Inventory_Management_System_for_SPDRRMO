@@ -6,6 +6,7 @@ use App\Models\PropertyItem;
 use App\Models\PropertyCategory;
 use App\Models\Personnel;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PropertyItemController extends Controller
 {
@@ -77,6 +78,29 @@ private function numberInRange(PropertyItem $item, string $search): bool
     return false;
 }
 
+    public function show(PropertyItem $property)
+    {
+        $property->load('category', 'personnel');
+
+        // units with a borrower right now, so each tag can be marked on the page
+        $outByNumber = $property->borrowedUnits()
+            ->stillOut()
+            ->with('borrowing.personnel')
+            ->get()
+            ->keyBy('property_no');
+
+        // every borrowing this item has ever been part of, newest first
+        $history = $property->borrowedUnits()
+            ->with('borrowing.personnel', 'receivedBy')
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy('borrowing_id')
+            ->sortByDesc(fn ($units) => $units->first()->borrowing?->created_at)
+            ->take(15);
+
+        return view('property.show', compact('property', 'outByNumber', 'history'));
+    }
+
     public function create()
     {
         $categories = PropertyCategory::orderBy('name')->get();
@@ -91,11 +115,13 @@ private function numberInRange(PropertyItem $item, string $search): bool
         'category_id' => 'required|exists:property_categories,id',
         'personnel_id' => 'nullable|exists:personnel,id',
         'description' => 'required|string|max:255',
-        'property_no' => 'required|string|max:100',
+        'property_no' => 'required|string|max:100|unique:property_items,property_no',
         'quantity' => 'required|integer|min:1|max:9999',
         'unit' => 'required|string|max:50',
-        'unit_value' => 'nullable|numeric|min:0',
+        'unit_value' => 'required|numeric|min:0',
         'remarks' => 'nullable|string|max:255',
+    ], [
+        'property_no.unique' => 'That property number is already used by another item.',
     ]);
 
     // on_hand equals the quantity
@@ -120,15 +146,23 @@ private function numberInRange(PropertyItem $item, string $search): bool
         'category_id' => 'required|exists:property_categories,id',
         'personnel_id' => 'nullable|exists:personnel,id',
         'description' => 'required|string|max:255',
-        'property_no' => 'required|string|max:100',
+        'property_no' => [
+            'required', 'string', 'max:100',
+            Rule::unique('property_items', 'property_no')->ignore($property->id),
+        ],
         'quantity' => 'required|integer|min:1|max:9999',
         'unit' => 'required|string|max:50',
-        'unit_value' => 'nullable|numeric|min:0',
+        'unit_value' => 'required|numeric|min:0',
         'remarks' => 'nullable|string|max:255',
+    ], [
+        'property_no.unique' => 'That property number is already used by another item.',
     ]);
 
-    // on_hand equals the quantity
-    $validated['on_hand_per_count'] = $validated['quantity'];
+    // the recorded count follows the quantity only while the two still agree —
+    // once a physical count has found a shortage, editing the item must not erase it
+    if ($property->on_hand_per_count === $property->quantity) {
+        $validated['on_hand_per_count'] = $validated['quantity'];
+    }
 
     $property->update($validated);
 
