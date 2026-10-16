@@ -70,9 +70,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/property', [PropertyItemController::class, 'store'])->name('property.store');
     Route::get('/property/report/options', [PropertyItemController::class, 'reportOptions'])->name('property.report.options');
     Route::get('/property/report/generate', [PropertyItemController::class, 'report'])->name('property.report');
+    Route::get('/property/scan', [PropertyItemController::class, 'scan'])->name('property.scan');
     Route::get('/property/{property}', [PropertyItemController::class, 'show'])
         ->whereNumber('property')
         ->name('property.show');
+    Route::get('/property/{property}/tags', [PropertyItemController::class, 'tags'])
+        ->whereNumber('property')
+        ->name('property.tags');
 
     // Borrowing — equipment lent out and returned; anyone can view and request
     Route::get('/borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');

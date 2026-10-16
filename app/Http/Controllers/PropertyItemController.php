@@ -101,6 +101,42 @@ private function numberInRange(PropertyItem $item, string $search): bool
         return view('property.show', compact('property', 'outByNumber', 'history'));
     }
 
+    // a scanned tag, or a number typed by hand, opens that unit's record
+    public function scan(Request $request)
+    {
+        $validated = $request->validate([
+            'property_no' => 'required|string|max:100',
+        ]);
+
+        $code = trim($validated['property_no']);
+
+        // one row covers a range of numbers, so check each row's generated list
+        $item = PropertyItem::whereNotNull('property_no')
+            ->get()
+            ->first(fn ($p) => in_array($code, $p->propertyNoList(), true));
+
+        if (! $item) {
+            return back()->with('error', "No property item carries the number {$code}.");
+        }
+
+        return redirect()->route('property.show', ['property' => $item, 'unit' => $code]);
+    }
+
+    // printable QR tags, one per unit, to be stuck on the equipment itself
+    public function tags(PropertyItem $property)
+    {
+        $numbers = array_filter($property->propertyNoList(), fn ($no) => $no && $no !== '—');
+
+        if (empty($numbers)) {
+            return back()->with('error', "\"{$property->description}\" has no property number, so there is nothing to tag.");
+        }
+
+        return view('property.tags', [
+            'property' => $property,
+            'numbers' => array_values($numbers),
+        ]);
+    }
+
     public function create()
     {
         $categories = PropertyCategory::orderBy('name')->get();

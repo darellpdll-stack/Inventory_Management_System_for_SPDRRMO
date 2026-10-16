@@ -7,8 +7,12 @@
     $numbers = $property->propertyNoList();
     $tagged = $property->property_no && count($numbers) && $numbers[0] !== '—';
     $outCount = $outByNumber->count();
+    // physically on the rack — a unit only reserved for a future date is still there
+    $onShelf = max(0, $property->quantity - $outCount);
     $totalValue = (float) $property->unit_value * (int) $property->quantity;
     $countMismatch = $property->on_hand_per_count !== $property->quantity;
+    // set when the page was reached by scanning a tag
+    $scanned = request('unit');
 @endphp
 
 <div class="page-head">
@@ -22,6 +26,11 @@
     </div>
     <div class="d-flex gap-2">
         <a href="{{ route('property.index') }}" class="btn btn-light"><i class="bi bi-arrow-left"></i> Back</a>
+        @if($tagged)
+            <a href="{{ route('property.tags', $property) }}" target="_blank" class="btn btn-outline-primary">
+                <i class="bi bi-qr-code"></i> Print Tags
+            </a>
+        @endif
         @if($isAdmin)
             <a href="{{ route('property.edit', $property) }}" class="btn btn-outline-primary">
                 <i class="bi bi-pencil"></i> Edit
@@ -61,7 +70,7 @@
         </div>
         <div>
             <div class="detail-label">Expected on shelf</div>
-            <div class="detail-value">{{ $property->availableQuantity() }}</div>
+            <div class="detail-value">{{ $onShelf }}</div>
             <div class="cell-sub">what a physical count should find</div>
         </div>
         <div>
@@ -85,19 +94,38 @@
             <div class="dpanel-title">Units</div>
             <div class="cell-sub">
                 @if($tagged)
-                    Green is on the shelf, blue is with a borrower.
+                    Hover a borrowed tag to see who has it.
                 @else
                     This item has no property numbers, so units are tracked by count only.
                 @endif
             </div>
         </div>
+        @if($tagged)
+            <div class="d-flex gap-2 align-items-center">
+                <span class="req-badge req-completed">{{ $onShelf }} on shelf</span>
+                <span class="req-badge req-for_release">{{ $outCount }} borrowed</span>
+            </div>
+        @endif
     </div>
+
+    @if($tagged && $scanned)
+        @php $scannedUnit = $outByNumber->get($scanned); @endphp
+        <div class="alert {{ $scannedUnit ? 'alert-warning' : 'alert-success' }} py-2 small">
+            Scanned <strong>{{ $scanned }}</strong> —
+            @if($scannedUnit)
+                borrowed by {{ $scannedUnit->borrowing->personnel->name ?? 'someone' }}.
+            @else
+                this unit should be on the shelf.
+            @endif
+        </div>
+    @endif
 
     @if($tagged)
         <div class="d-flex flex-wrap gap-1" style="max-height: 220px; overflow-y: auto;">
             @foreach($numbers as $number)
                 @php $unit = $outByNumber->get($number); @endphp
                 <span class="req-badge {{ $unit ? 'req-for_release' : 'req-completed' }}"
+                      @if($number === $scanned) style="outline: 2px solid currentColor; outline-offset: 1px;" @endif
                       @if($unit) title="{{ $unit->borrowing->personnel->name ?? '' }}" @endif>
                     {{ $number }}
                 </span>
@@ -134,7 +162,7 @@
     @else
         <div class="cell-sub">
             {{ $property->quantity }} owned · {{ $outCount }} borrowed ·
-            {{ $property->availableQuantity() }} available
+            {{ $onShelf }} on shelf
         </div>
     @endif
 </div>

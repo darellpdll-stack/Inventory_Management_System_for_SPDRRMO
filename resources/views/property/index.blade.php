@@ -9,6 +9,24 @@
         <a href="{{ route('property.create') }}" class="btn btn-primary">+ Add Property</a>
     </div>
 </div>
+{{-- Scan a tag, or type its number — a USB scanner types here and presses Enter --}}
+<form method="GET" action="{{ route('property.scan') }}" class="card shadow-sm mb-3">
+    <div class="card-body py-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <i class="bi bi-qr-code-scan fs-5 text-primary"></i>
+            <div class="flex-grow-1" style="min-width: 220px;">
+                <input type="text" name="property_no" class="form-control"
+                       placeholder="Scan a property tag, or type its number…"
+                       autocomplete="off" autofocus>
+            </div>
+            <button class="btn btn-primary">Find</button>
+        </div>
+        <div class="text-muted small mt-2">
+            Opens the item that carries that property number.
+        </div>
+    </div>
+</form>
+
 <form method="GET" class="row g-2 mb-3">
     <div class="col-md-3">
         <select name="type" class="form-select" onchange="this.form.submit()">
