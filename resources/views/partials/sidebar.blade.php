@@ -46,6 +46,11 @@
             </a>
         </li>
         <li class="nav-item">
+            <a href="{{ route('counts.index') }}" class="nav-link {{ request()->routeIs('counts.*') ? 'active' : '' }}">
+                <i class="bi bi-upc-scan"></i> Physical Count
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="{{ route('personnel.index') }}" class="nav-link {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i> Personnel
             </a>

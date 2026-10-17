@@ -103,15 +103,25 @@
                     </td>
 
                     <td class="text-end text-nowrap">
-                        <a href="{{ route('stock.create', $item) }}" class="btn btn-sm btn-outline-success" title="Add stock">
-                            <i class="bi bi-plus-circle"></i>
-                        </a>
-                        <a href="{{ route('supplies.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('supplies.destroy', $item) }}" method="POST" class="d-inline"
-                              onsubmit="return confirm('Delete this item?');">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        <div class="d-flex gap-1 justify-content-end">
+                            <a href="{{ route('stock.create', $item) }}"
+                               class="btn btn-sm btn-outline-success" title="Add stock">
+                                <i class="bi bi-plus-circle"></i>
+                            </a>
+                            <a href="{{ route('supplies.edit', $item) }}"
+                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            @if(Auth::user()->role === 'admin')
+                                <form action="{{ route('supplies.destroy', $item) }}" method="POST"
+                                      onsubmit="return confirm('Delete this item?');">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

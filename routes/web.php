@@ -11,6 +11,7 @@ use App\Http\Controllers\SupplyRequestController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StockEntryController;
 use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\PhysicalCountController;
 
 Route::get('/', fn () => redirect()->route('login'));
 
@@ -87,6 +88,17 @@ Route::middleware('auth')->group(function () {
         ->name('borrowings.show');
     Route::get('/borrowings/{borrowing}/form', [BorrowingController::class, 'form'])->name('borrowings.form');
 
+    // Physical count — walking the storeroom with a scanner
+    Route::get('/counts', [PhysicalCountController::class, 'index'])->name('counts.index');
+    Route::post('/counts', [PhysicalCountController::class, 'store'])->name('counts.store');
+    Route::get('/counts/{count}', [PhysicalCountController::class, 'show'])
+        ->whereNumber('count')
+        ->name('counts.show');
+    Route::post('/counts/{count}/scan', [PhysicalCountController::class, 'scan'])->name('counts.scan');
+    Route::post('/counts/{count}/tick', [PhysicalCountController::class, 'tick'])->name('counts.tick');
+    Route::delete('/counts/{count}/scans/{scan}', [PhysicalCountController::class, 'destroyScan'])
+        ->name('counts.scans.destroy');
+
     // Reports hub
     Route::view('/reports', 'reports.index')->name('reports.index');
 
@@ -123,6 +135,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/requests/{supplyRequest}/for-release', [SupplyRequestController::class, 'markForRelease'])->name('requests.forRelease');
         Route::post('/requests/{supplyRequest}/decline', [SupplyRequestController::class, 'decline'])->name('requests.decline');
         Route::post('/requests/{supplyRequest}/release', [SupplyRequestController::class, 'release'])->name('requests.release');
+
+        // Physical count — closing a count and writing it to the records
+        Route::post('/counts/{count}/close', [PhysicalCountController::class, 'close'])->name('counts.close');
+        Route::post('/counts/{count}/apply', [PhysicalCountController::class, 'apply'])->name('counts.apply');
+        Route::post('/counts/{count}/abandon', [PhysicalCountController::class, 'abandon'])->name('counts.abandon');
 
         // Borrowing — reviewing, releasing and receiving back
         Route::post('/borrowings/{borrowing}/approve', [BorrowingController::class, 'approve'])->name('borrowings.approve');

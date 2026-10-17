@@ -88,12 +88,17 @@
         <td>{{ $item->remarks ?? '—' }}</td>
         <td class="text-end text-nowrap">
             @if(Auth::user()->role === 'admin')
-                <div class="d-flex gap-2 justify-content-end">
-                    <a href="{{ route('property.edit', $item) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <div class="d-flex gap-1 justify-content-end">
+                    <a href="{{ route('property.edit', $item) }}"
+                       class="btn btn-sm btn-outline-primary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </a>
                     <form action="{{ route('property.destroy', $item) }}" method="POST"
                           onsubmit="return confirm('Delete this property item?');">
                         @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        <button class="btn btn-sm btn-outline-danger" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </form>
                 </div>
             @else
