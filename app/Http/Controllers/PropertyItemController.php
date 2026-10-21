@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PropertyItem;
 use App\Models\PropertyCategory;
 use App\Models\Personnel;
+use App\Support\QrTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -105,10 +106,13 @@ private function numberInRange(PropertyItem $item, string $search): bool
     public function scan(Request $request)
     {
         $validated = $request->validate([
-            'property_no' => 'required|string|max:100',
+            // a scanner types the tag's whole link in here, which is longer
+            // than any property number
+            'property_no' => 'required|string|max:255',
         ]);
 
-        $code = trim($validated['property_no']);
+        // a link from one of our tags, or a number off the sticker — either way
+        $code = QrTag::readCode($validated['property_no']);
 
         // one row covers a range of numbers, so check each row's generated list
         $item = PropertyItem::whereNotNull('property_no')

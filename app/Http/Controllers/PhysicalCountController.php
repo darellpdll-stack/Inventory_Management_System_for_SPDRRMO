@@ -6,6 +6,7 @@ use App\Models\BorrowedUnit;
 use App\Models\PhysicalCount;
 use App\Models\PhysicalCountScan;
 use App\Models\PropertyItem;
+use App\Support\QrTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -93,10 +94,17 @@ class PhysicalCountController extends Controller
         }
 
         $validated = $request->validate([
-            'property_no' => 'required|string|max:100',
+            // a scanner types the tag's whole link in here, which is longer
+            // than any property number
+            'property_no' => 'required|string|max:255',
         ]);
 
-        $code = trim($validated['property_no']);
+        // a link from one of our tags, or a number off the sticker — either way
+        $code = QrTag::readCode($validated['property_no']);
+
+        if ($code === '') {
+            return back()->with('error', 'Nothing was scanned.');
+        }
 
         if ($count->scans()->where('property_no', $code)->exists()) {
             return back()->with('error', "{$code} has already been counted in this session.");

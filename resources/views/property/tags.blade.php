@@ -63,12 +63,18 @@
             the dashed outlines are a screen guide and will not print ·
             label size is set at the top of this page's stylesheet
         </div>
+        <div class="hint">
+            <strong>Print these from the live site, not from localhost.</strong>
+            Each code carries a link back to this system, and a phone can only
+            follow a link it can actually reach.
+        </div>
     </div>
 
     <div class="sheet">
         @foreach($numbers as $number)
             <div class="label">
-                <div class="qr">{!! \App\Support\QrTag::svg($number) !!}</div>
+                {{-- the code carries a link, so a phone camera opens the record --}}
+                <div class="qr">{!! \App\Support\QrTag::svg(\App\Support\QrTag::url($number)) !!}</div>
                 <div class="text">
                     <div class="office">SPDRRMO</div>
                     <div class="no">{{ $number }}</div>
