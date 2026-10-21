@@ -48,7 +48,10 @@ class AuthController extends Controller
 
     if (Auth::attempt($credentials, $request->boolean('remember'))) {
         $request->session()->regenerate();
-        return redirect()->route('dashboard');
+
+        // someone who scanned a tag was headed for that item, not the
+        // dashboard — send them where they were going if we know it
+        return redirect()->intended(route('dashboard'));
     }
 
     return back()->withErrors([
