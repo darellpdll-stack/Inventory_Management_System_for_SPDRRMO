@@ -2,9 +2,10 @@
 @section('title', 'Property')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
+{{-- the buttons keep a row of their own once the heading no longer fits beside them --}}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h4 class="fw-bold mb-0">Property Inventory</h4>
-    <div>
+    <div class="d-flex gap-2">
         <a href="{{ route('property.report.options') }}" class="btn btn-outline-primary">Generate Report</a>
         <a href="{{ route('property.create') }}" class="btn btn-primary">+ Add Property</a>
     </div>
