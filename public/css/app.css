@@ -278,13 +278,64 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 .timeline-by { font-size: .76rem; color: var(--muted); }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-    .sidebar { position: static; width: 100%; min-height: auto; }
+
+/* the drawer's shade; never shown on a wide screen */
+.nav-backdrop { display: none; }
+
+/* On a phone the sidebar slides in over the page instead of stacking above
+   it. Stacked, every page began with the whole menu and pushed the real
+   content off-screen — which matters now that scanning a property tag lands
+   someone on their phone, and that a physical count is walked with a phone
+   rather than a laptop. */
+@media (max-width: 991.98px) {
+    .sidebar {
+        width: 264px;
+        transform: translateX(-100%);
+        transition: transform .22s ease;
+        z-index: 1050;
+        box-shadow: 0 0 28px rgba(0, 0, 0, .3);
+    }
+    .sidebar.is-open { transform: none; }
+
     .content-wrap { margin-left: 0; }
+
+    .nav-backdrop:not([hidden]) {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        z-index: 1040;
+    }
+
+    /* the page's own heading carries the context, so the bar stays thin */
+    .topbar { padding: .55rem .9rem; }
+    .topbar .eyebrow { display: none; }
+    .topbar .page-title { font-size: 1rem; }
+
+    main.container-fluid {
+        padding-left: .9rem !important;
+        padding-right: .9rem !important;
+        padding-top: 1.1rem !important;
+    }
+
+    .page-title { font-size: 1.2rem; }
+    .page-head { margin-bottom: 1rem; }
+    .dpanel { padding: 1rem; }
 }
+
+/* a drawer that was open when the window grew must not stay half-shown */
+@media (min-width: 992px) {
+    .sidebar.is-open { transform: none; }
+}
+
 @media (max-width: 575px) {
     .hero-cats { grid-template-columns: 1fr; }
     .detail-grid { grid-template-columns: 1fr; }
+
+    /* buttons in a page heading go full width rather than crushing together */
+    .page-head > .d-flex { width: 100%; }
+    .page-head > .d-flex > .btn,
+    .page-head > .d-flex > form > .btn { flex: 1 1 auto; }
 }
 
 /* ---------- Dark mode ---------- */

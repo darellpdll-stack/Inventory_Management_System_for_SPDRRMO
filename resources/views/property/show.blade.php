@@ -94,7 +94,8 @@
             <div class="dpanel-title">Units</div>
             <div class="cell-sub">
                 @if($tagged)
-                    Hover a borrowed tag to see who has it.
+                    {{-- a phone has no hover, and this page is opened by scanning --}}
+                    Borrowed units are listed below, with who has them.
                 @else
                     This item has no property numbers, so units are tracked by count only.
                 @endif

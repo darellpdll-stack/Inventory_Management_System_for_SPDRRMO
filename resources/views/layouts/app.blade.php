@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/app.css') }}?v=7" rel="stylesheet">
+    <link href="{{ asset('css/app.css') }}?v=8" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
@@ -25,6 +25,9 @@
 <body>
     @auth
     @include('partials.sidebar')
+
+    {{-- shade behind the drawer on narrow screens; tapping it closes the menu --}}
+    <div class="nav-backdrop" id="navBackdrop" hidden></div>
 
     <div class="content-wrap">
         @include('partials.topbar')
@@ -96,6 +99,43 @@
         });
     })();
 </script>
+    <script>
+    (function () {
+        var toggle = document.getElementById('navToggle');
+        var sidebar = document.querySelector('.sidebar');
+        var backdrop = document.getElementById('navBackdrop');
+
+        if (!toggle || !sidebar || !backdrop) return;
+
+        function setOpen(open) {
+            sidebar.classList.toggle('is-open', open);
+            backdrop.hidden = !open;
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            // stop the page scrolling underneath the drawer
+            document.body.style.overflow = open ? 'hidden' : '';
+        }
+
+        toggle.addEventListener('click', function () {
+            setOpen(!sidebar.classList.contains('is-open'));
+        });
+
+        backdrop.addEventListener('click', function () { setOpen(false); });
+
+        // following a link should leave the menu behind
+        sidebar.addEventListener('click', function (e) {
+            if (e.target.closest('a')) setOpen(false);
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') setOpen(false);
+        });
+
+        // a drawer left open while the window grows would strand the backdrop
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 992) setOpen(false);
+        });
+    })();
+    </script>
     @stack('scripts')
 </body>
 </html>
