@@ -27,6 +27,15 @@
             'numbers' => $units->pluck('number')->values(),
         ])
         ->values();
+
+    // only the categories still to be found — once everything in a category is
+    // counted it drops out of the list, which is the useful behaviour
+    $filterCategories = $missingByItem
+        ->pluck('item.category.name')
+        ->filter()
+        ->unique()
+        ->sort()
+        ->values();
 @endphp
 
 <div class="page-head">
@@ -107,7 +116,24 @@
                 </div>
             </div>
             <div class="d-flex gap-2 align-items-center flex-wrap">
-                <div class="search-box" style="max-width: 220px;">
+                {{-- narrowing happens in the browser, so a half-finished set of
+                     ticks survives changing what is on screen --}}
+                <label class="visually-hidden" for="tickCategory">Category</label>
+                <select id="tickCategory" class="form-select form-select-sm" style="width: auto;">
+                    <option value="">All categories</option>
+                    @foreach($filterCategories as $categoryName)
+                        <option value="{{ $categoryName }}">{{ $categoryName }}</option>
+                    @endforeach
+                </select>
+
+                <label class="visually-hidden" for="tickType">Type</label>
+                <select id="tickType" class="form-select form-select-sm" style="width: auto;">
+                    <option value="">All types</option>
+                    <option value="semi-expendable">Semi-expendable</option>
+                    <option value="expendable">Expendable</option>
+                </select>
+
+                <div class="search-box" style="max-width: 200px;">
                     <i class="bi bi-search"></i>
                     <input type="text" id="tickFilter" class="form-control" placeholder="Filter items…">
                 </div>
@@ -115,10 +141,14 @@
             </div>
         </div>
 
-        <div style="max-height: 360px; overflow-y: auto;">
+        <div class="cell-sub mb-2" id="tickCountLine"></div>
+
+        <div class="scroll-cap" style="--cap: 360px;">
             @foreach($missingByItem as $row)
-                <div class="timeline-item tick-item"
-                     data-name="{{ Str::lower($row->item->description . ' ' . ($row->item->category->name ?? '')) }}">
+                <div class="timeline-item tick-item js-filterable"
+                     data-name="{{ Str::lower($row->item->description . ' ' . ($row->item->category->name ?? '')) }}"
+                     data-category="{{ $row->item->category->name ?? '' }}"
+                     data-type="{{ $row->item->type }}">
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <div>
                             <div class="cell-main">{{ $row->item->description }}</div>
@@ -132,14 +162,15 @@
 
                     <div class="d-flex flex-wrap gap-2">
                         @foreach($row->numbers as $number)
-                            <div class="form-check form-check-inline me-0">
+                            {{-- the whole pill is the target; a bare checkbox is
+                                 too small for a thumb, and this list is ticked
+                                 while standing in the storeroom --}}
+                            <label class="tick-unit">
                                 <input class="form-check-input tick-box" type="checkbox"
                                        name="numbers[]" value="{{ $number }}"
                                        id="tick{{ $loop->parent->index }}_{{ $loop->index }}">
-                                <label class="form-check-label small" for="tick{{ $loop->parent->index }}_{{ $loop->index }}">
-                                    {{ $number }}
-                                </label>
-                            </div>
+                                <span>{{ $number }}</span>
+                            </label>
                         @endforeach
                     </div>
                 </div>
@@ -183,9 +214,14 @@
                 In the records, not scanned, and not out on a Borrower's Form.
             </div>
 
-            <div style="max-height: 420px; overflow-y: auto;">
+            <div class="scroll-cap" style="--cap: 420px;">
             @forelse($missingByItem as $row)
-                <div class="timeline-item">
+                {{-- same filter as the tick list above, so narrowing to one
+                     category narrows what is still missing from it too --}}
+                <div class="timeline-item js-filterable"
+                     data-name="{{ Str::lower($row->item->description . ' ' . ($row->item->category->name ?? '')) }}"
+                     data-category="{{ $row->item->category->name ?? '' }}"
+                     data-type="{{ $row->item->type }}">
                     <div class="d-flex justify-content-between align-items-start gap-2">
                         <div class="flex-grow-1">
                             <div class="cell-main">{{ $row->item->description }}</div>
@@ -218,7 +254,7 @@
             <div class="dpanel-title mb-1">Absent but Explained</div>
             <div class="cell-sub mb-3">Out on a Borrower's Form, so not expected on the shelf.</div>
 
-            <div style="max-height: 300px; overflow-y: auto;">
+            <div class="scroll-cap" style="--cap: 300px;">
             @foreach($borrowedByItem as $row)
                 @php $borrowed = $borrowedNumbers->get($row->numbers->first()); @endphp
                 <div class="timeline-item">
@@ -316,7 +352,7 @@
             <div class="dpanel-title mb-1">Scanned</div>
             <div class="cell-sub mb-3">Newest first. {{ $scans->count() }} in total.</div>
 
-            <div style="max-height: 380px; overflow-y: auto;">
+            <div class="scroll-cap" style="--cap: 380px;">
                 @forelse($scans as $scan)
                     <div class="timeline-item">
                         <div class="d-flex justify-content-between align-items-center gap-2">
@@ -427,14 +463,61 @@
         boxes.forEach(function (b) { b.checked = !allOn; });
     });
 
-    // filter the tick list by item name
-    document.addEventListener('input', function (e) {
-        if (e.target.id !== 'tickFilter') return;
+    // Narrow both lists by category, type and name. Done here rather than by
+    // reloading the page, because a reload would throw away every box ticked
+    // so far — and the ticking is the work.
+    function value(id) {
+        var el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    }
 
-        var term = e.target.value.trim().toLowerCase();
-        document.querySelectorAll('.tick-item').forEach(function (row) {
-            row.classList.toggle('d-none', term !== '' && !(row.dataset.name || '').includes(term));
+    function applyFilter() {
+        var term = value('tickFilter').toLowerCase();
+        var category = value('tickCategory');
+        var type = value('tickType');
+        var shown = 0;
+        var hiddenTicks = 0;
+
+        document.querySelectorAll('.js-filterable').forEach(function (row) {
+            var name = row.dataset.name || '';
+            var keep = (term === '' || name.indexOf(term) !== -1)
+                && (category === '' || row.dataset.category === category)
+                && (type === '' || row.dataset.type === type);
+
+            row.classList.toggle('d-none', !keep);
+
+            if (row.classList.contains('tick-item')) {
+                if (keep) {
+                    shown++;
+                } else {
+                    hiddenTicks += row.querySelectorAll('.tick-box:checked').length;
+                }
+            }
         });
+
+        // a box ticked before narrowing still saves, so say so rather than let
+        // someone think their earlier ticks were dropped
+        var line = document.getElementById('tickCountLine');
+        if (!line) return;
+
+        var parts = [];
+        if (term || category || type) {
+            parts.push(shown + (shown === 1 ? ' item shown' : ' items shown'));
+        }
+        if (hiddenTicks) {
+            parts.push(hiddenTicks + (hiddenTicks === 1 ? ' ticked unit is hidden but will still be saved'
+                                                        : ' ticked units are hidden but will still be saved'));
+        }
+        line.textContent = parts.join(' · ');
+    }
+
+    document.addEventListener('input', function (e) {
+        if (e.target.id === 'tickFilter') applyFilter();
+    });
+
+    document.addEventListener('change', function (e) {
+        if (e.target.id === 'tickCategory' || e.target.id === 'tickType') applyFilter();
+        if (e.target.classList.contains('tick-box')) applyFilter();
     });
 })();
 </script>

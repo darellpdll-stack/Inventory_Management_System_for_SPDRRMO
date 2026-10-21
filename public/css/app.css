@@ -260,9 +260,12 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 .req-declined    { background: #f6e4e4; color: var(--danger); } /* red — refused */
 /* ---------- Requests list & detail ---------- */
 .list-toolbar { display: flex; justify-content: space-between; gap: .75rem; flex-wrap: wrap; padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); }
-.list-toolbar .search-box { position: relative; flex: 1; max-width: 380px; }
-.list-toolbar .search-box i { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
-.list-toolbar .search-box input { padding-left: 2.2rem; }
+/* A search box sits anywhere, not only in a list toolbar — the physical count
+   uses one too. Scoped to .list-toolbar, its icon was never positioned and
+   dropped onto a line of its own above the field. */
+.search-box { position: relative; flex: 1 1 auto; max-width: 380px; }
+.search-box i { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.search-box input { padding-left: 2.2rem; }
 .req-no { font-family: ui-monospace, Consolas, monospace; font-size: .8rem; color: var(--sidebar); font-weight: 600; text-decoration: none; }
 .req-no:hover { text-decoration: underline; }
 .cell-main { font-size: .9rem; color: var(--ink); }
@@ -276,6 +279,47 @@ a.stat-mini:hover { border-color: var(--sidebar); }
 .timeline-item:last-child { border-bottom: 0; }
 .timeline-when { font-size: .92rem; color: var(--ink); font-weight: 600; }
 .timeline-by { font-size: .76rem; color: var(--muted); }
+
+/* ---------- Physical count: tick list ---------- */
+
+/* One unit to tick. A bare checkbox is about 16px and this list gets used
+   one-handed, standing in front of a shelf, so the number and its box are
+   one pill and the whole pill is the target. */
+.tick-unit {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 42px;
+    margin: 0;
+    padding: .3rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+    cursor: pointer;
+    user-select: none;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .82rem;
+    transition: border-color .12s ease, background-color .12s ease;
+}
+.tick-unit input {
+    margin: 0;
+    flex: 0 0 auto;
+    width: 1.15rem;
+    height: 1.15rem;
+}
+.tick-unit:has(input:checked) {
+    border-color: var(--sidebar);
+    background: #e7edf5;
+    font-weight: 600;
+}
+[data-bs-theme="dark"] .tick-unit:has(input:checked) {
+    background: rgba(255, 255, 255, .08);
+    border-color: var(--accent);
+}
+
+/* A panel that scrolls on its own, capped by --cap on the element itself.
+   Released from the cap on a phone — see the responsive block below. */
+.scroll-cap { max-height: var(--cap, 360px); overflow-y: auto; }
 
 /* ---------- Responsive ---------- */
 
@@ -321,6 +365,14 @@ a.stat-mini:hover { border-color: var(--sidebar); }
     .page-title { font-size: 1.2rem; }
     .page-head { margin-bottom: 1rem; }
     .dpanel { padding: 1rem; }
+
+    /* A box that scrolls inside a page that also scrolls is miserable with a
+       thumb — the swipe lands on whichever one it feels like. On a phone the
+       panels run their full length and the page scrolls once. */
+    .scroll-cap { max-height: none; overflow-y: visible; }
+
+    /* room for a thumb between targets */
+    .tick-unit { min-height: 46px; font-size: .86rem; }
 }
 
 /* a drawer that was open when the window grew must not stay half-shown */
